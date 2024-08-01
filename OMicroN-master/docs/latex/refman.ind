@@ -1,0 +1,244 @@
+\begin{theindex}
+
+  \item {$\sim$StateVars}
+    \subitem {StateVars}, \hyperpage{17}
+
+  \indexspace
+
+  \item {AddInterfaceIndex}
+    \subitem {Microstructure}, \hyperpage{7}
+  \item {AddInterphaseIndex}
+    \subitem {Microstructure}, \hyperpage{7}
+  \item {addOriAndReturnId}
+    \subitem {Orientations}, \hyperpage{10}
+  \item {Application}, \hyperpage{5}
+    \subitem {Application}, \hyperpage{5}
+  \item {AusteniteMolarVolume}
+    \subitem {ThermChemKin}, \hyperpage{26}
+
+  \indexspace
+
+  \item {CalcMisorientationFromEulerAngles}
+    \subitem {Orientations}, \hyperpage{11}
+  \item {CalculateMisorientationBetweenTwoOriIds}
+    \subitem {Orientations}, \hyperpage{11}
+  \item {CalculateXcEqNextToInterphase}
+    \subitem {ThermChemKin}, \hyperpage{27}
+  \item {CarbonAtFractionToWtPercent}
+    \subitem {ThermChemKin}, \hyperpage{28}
+  \item {CarbonWtPercentToAtFraction}
+    \subitem {ThermChemKin}, \hyperpage{28}
+  \item {CSL19a}
+    \subitem {orientation.h}, \hyperpage{44}
+
+  \indexspace
+
+  \item {DistanceOfBoundaryFromCSL19a}
+    \subitem {Orientations}, \hyperpage{12}
+
+  \indexspace
+
+  \item {FerriteMolarVolume}
+    \subitem {ThermChemKin}, \hyperpage{29}
+
+  \indexspace
+
+  \item {GetAllNeighbourCells}
+    \subitem {StateVars}, \hyperpage{17}
+  \item {GetBoundaryCell}
+    \subitem {StateVars}, \hyperpage{17}
+  \item {GetCDiffusivityAgren}
+    \subitem {ThermChemKin}, \hyperpage{29}
+  \item {GetCDiffusivityAgrenWithRestrictionForXC}
+    \subitem {ThermChemKin}, \hyperpage{29}
+  \item {GetCDiffusivityMartensite}
+    \subitem {ThermChemKin}, \hyperpage{30}
+  \item {GetDistanceBetweenCells}
+    \subitem {StateVars}, \hyperpage{18}
+  \item {GetEqMuCarbonRelatedParametersABCD}
+    \subitem {ThermChemKin}, \hyperpage{30}
+  \item {GetEqXcFCCAtThisInterface}
+    \subitem {ThermChemKin}, \hyperpage{32}
+  \item {GetEulerAngles}
+    \subitem {Orientations}, \hyperpage{12}
+  \item {GetGrainBoundaryEnergy}
+    \subitem {ThermChemKin}, \hyperpage{32}
+  \item {GetGrainBoundaryMobility}
+    \subitem {ThermChemKin}, \hyperpage{32}
+  \item {GetIJKFromIndex}
+    \subitem {StateVars}, \hyperpage{18}
+  \item {GetInterfaceIndices}
+    \subitem {Microstructure}, \hyperpage{8}
+  \item {GetInterphaseIndices}
+    \subitem {Microstructure}, \hyperpage{8}
+  \item {GetMuSubstitutionalInBCC}
+    \subitem {ThermChemKin}, \hyperpage{33}
+  \item {GetMuSubstitutionalInFCC}
+    \subitem {ThermChemKin}, \hyperpage{33}
+  \item {GetNeighbourCellOffsets}
+    \subitem {StateVars}, \hyperpage{19}
+  \item {getOutputFolderPath}
+    \subitem {UserSettings}, \hyperpage{40}
+  \item {GetPhaseBoundaryEnergy}
+    \subitem {ThermChemKin}, \hyperpage{34}
+  \item {GetPhaseBoundaryMobility}
+    \subitem {ThermChemKin}, \hyperpage{34}
+  \item {GetSoluteDiffusivityFromUser}
+    \subitem {ThermChemKin}, \hyperpage{34}
+  \item {getStartFileName}
+    \subitem {UserSettings}, \hyperpage{41}
+  \item {GetTemperatureForThisStep}
+    \subitem {ThermChemKin}, \hyperpage{34}
+  \item {getThermodynamicDataFile}
+    \subitem {UserSettings}, \hyperpage{41}
+  \item {GetValueGibbs\_Clamped}
+    \subitem {ThermChemKin}, \hyperpage{35}
+  \item {GetValueLocalEqXC\_Clamped}
+    \subitem {ThermChemKin}, \hyperpage{35}
+  \item {GetXCOfCell}
+    \subitem {StateVars}, \hyperpage{19}
+  \item {GetXFromIndex}
+    \subitem {StateVars}, \hyperpage{19}
+  \item {GetXYZFromIndex}
+    \subitem {StateVars}, \hyperpage{20}
+  \item {GetYFromIndex}
+    \subitem {StateVars}, \hyperpage{20}
+  \item {GetZFromIndex}
+    \subitem {StateVars}, \hyperpage{20}
+
+  \indexspace
+
+  \item {IJKToIndex}
+    \subitem {StateVars}, \hyperpage{22}
+  \item {IndexToIJK}
+    \subitem {StateVars}, \hyperpage{22}
+  \item {IsCellOnBoundary}
+    \subitem {StateVars}, \hyperpage{23}
+  \item {IsStillSimulating}
+    \subitem {Microstructure}, \hyperpage{8}
+
+  \indexspace
+
+  \item {Lim}
+    \subitem {Orientations}, \hyperpage{13}
+  \item {LoadChemicalPotentialsAndLocalEquilibriumXC}
+    \subitem {ThermChemKin}, \hyperpage{35}
+
+  \indexspace
+
+  \item {MakeTablesYForGibbsVSCarbon}
+    \subitem {ThermChemKin}, \hyperpage{36}
+  \item {MakeTablesYForXCEqVSCarbonInterface}
+    \subitem {ThermChemKin}, \hyperpage{36}
+  \item {Microstructure}, \hyperpage{6}
+    \subitem {AddInterfaceIndex}, \hyperpage{7}
+    \subitem {AddInterphaseIndex}, \hyperpage{7}
+    \subitem {GetInterfaceIndices}, \hyperpage{8}
+    \subitem {GetInterphaseIndices}, \hyperpage{8}
+    \subitem {IsStillSimulating}, \hyperpage{8}
+    \subitem {Microstructure}, \hyperpage{7}
+    \subitem {RemoveInterfaceIndex}, \hyperpage{8}
+    \subitem {RemoveInterphaseIndex}, \hyperpage{9}
+  \item {misorientationQ}
+    \subitem {Orientations}, \hyperpage{13}
+
+  \indexspace
+
+  \item {orientation.h}
+    \subitem {CSL19a}, \hyperpage{44}
+    \subitem {SYM}, \hyperpage{45}
+  \item {Orientations}, \hyperpage{9}
+    \subitem {addOriAndReturnId}, \hyperpage{10}
+    \subitem {CalcMisorientationFromEulerAngles}, \hyperpage{11}
+    \subitem {CalculateMisorientationBetweenTwoOriIds}, \hyperpage{11}
+    \subitem {DistanceOfBoundaryFromCSL19a}, \hyperpage{12}
+    \subitem {GetEulerAngles}, \hyperpage{12}
+    \subitem {Lim}, \hyperpage{13}
+    \subitem {misorientationQ}, \hyperpage{13}
+    \subitem {Orientations}, \hyperpage{10}
+    \subitem {SetOrientationParameters}, \hyperpage{14}
+
+  \indexspace
+
+  \item {RemoveInterfaceIndex}
+    \subitem {Microstructure}, \hyperpage{8}
+  \item {RemoveInterphaseIndex}
+    \subitem {Microstructure}, \hyperpage{9}
+
+  \indexspace
+
+  \item {SetEBSDRelatedStuffForRexAndGG}
+    \subitem {StateVars}, \hyperpage{23}
+  \item {SetOrientationParameters}
+    \subitem {Orientations}, \hyperpage{14}
+  \item {SetTemperatureForThisStep}
+    \subitem {ThermChemKin}, \hyperpage{37}
+  \item {SoluteDiffusionStep}
+    \subitem {StateVars}, \hyperpage{23}
+  \item {src/orientation.h}, \hyperpage{43}
+  \item {StateVars}, \hyperpage{14}
+    \subitem {$\sim$StateVars}, \hyperpage{17}
+    \subitem {GetAllNeighbourCells}, \hyperpage{17}
+    \subitem {GetBoundaryCell}, \hyperpage{17}
+    \subitem {GetDistanceBetweenCells}, \hyperpage{18}
+    \subitem {GetIJKFromIndex}, \hyperpage{18}
+    \subitem {GetNeighbourCellOffsets}, \hyperpage{19}
+    \subitem {GetXCOfCell}, \hyperpage{19}
+    \subitem {GetXFromIndex}, \hyperpage{19}
+    \subitem {GetXYZFromIndex}, \hyperpage{20}
+    \subitem {GetYFromIndex}, \hyperpage{20}
+    \subitem {GetZFromIndex}, \hyperpage{20}
+    \subitem {IJKToIndex}, \hyperpage{22}
+    \subitem {IndexToIJK}, \hyperpage{22}
+    \subitem {IsCellOnBoundary}, \hyperpage{23}
+    \subitem {SetEBSDRelatedStuffForRexAndGG}, \hyperpage{23}
+    \subitem {SoluteDiffusionStep}, \hyperpage{23}
+    \subitem {StateVars}, \hyperpage{16}
+  \item {SYM}
+    \subitem {orientation.h}, \hyperpage{45}
+
+  \indexspace
+
+  \item {ThermChemKin}, \hyperpage{24}
+    \subitem {AusteniteMolarVolume}, \hyperpage{26}
+    \subitem {CalculateXcEqNextToInterphase}, \hyperpage{27}
+    \subitem {CarbonAtFractionToWtPercent}, \hyperpage{28}
+    \subitem {CarbonWtPercentToAtFraction}, \hyperpage{28}
+    \subitem {FerriteMolarVolume}, \hyperpage{29}
+    \subitem {GetCDiffusivityAgren}, \hyperpage{29}
+    \subitem {GetCDiffusivityAgrenWithRestrictionForXC}, \hyperpage{29}
+    \subitem {GetCDiffusivityMartensite}, \hyperpage{30}
+    \subitem {GetEqMuCarbonRelatedParametersABCD}, \hyperpage{30}
+    \subitem {GetEqXcFCCAtThisInterface}, \hyperpage{32}
+    \subitem {GetGrainBoundaryEnergy}, \hyperpage{32}
+    \subitem {GetGrainBoundaryMobility}, \hyperpage{32}
+    \subitem {GetMuSubstitutionalInBCC}, \hyperpage{33}
+    \subitem {GetMuSubstitutionalInFCC}, \hyperpage{33}
+    \subitem {GetPhaseBoundaryEnergy}, \hyperpage{34}
+    \subitem {GetPhaseBoundaryMobility}, \hyperpage{34}
+    \subitem {GetSoluteDiffusivityFromUser}, \hyperpage{34}
+    \subitem {GetTemperatureForThisStep}, \hyperpage{34}
+    \subitem {GetValueGibbs\_Clamped}, \hyperpage{35}
+    \subitem {GetValueLocalEqXC\_Clamped}, \hyperpage{35}
+    \subitem {LoadChemicalPotentialsAndLocalEquilibriumXC}, 
+		\hyperpage{35}
+    \subitem {MakeTablesYForGibbsVSCarbon}, \hyperpage{36}
+    \subitem {MakeTablesYForXCEqVSCarbonInterface}, \hyperpage{36}
+    \subitem {SetTemperatureForThisStep}, \hyperpage{37}
+    \subitem {ThermChemKin}, \hyperpage{26}
+
+  \indexspace
+
+  \item {UserSettings}, \hyperpage{37}
+    \subitem {getOutputFolderPath}, \hyperpage{40}
+    \subitem {getStartFileName}, \hyperpage{41}
+    \subitem {getThermodynamicDataFile}, \hyperpage{41}
+    \subitem {UserSettings}, \hyperpage{40}
+    \subitem {writeToFile}, \hyperpage{41}
+
+  \indexspace
+
+  \item {writeToFile}
+    \subitem {UserSettings}, \hyperpage{41}
+
+\end{theindex}

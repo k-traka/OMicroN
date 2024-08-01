@@ -1,0 +1,507 @@
+\hypertarget{classStateVars}{}\doxysection{State\+Vars Class Reference}
+\label{classStateVars}\index{StateVars@{StateVars}}
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classStateVars_a1065663e9e485cb2c13d867b298cda60}{Set\+EBSDRelated\+Stuff\+For\+Rex\+And\+GG}} (int index, float CI, int RX, float rho)
+\begin{DoxyCompactList}\small\item\em Sets id of grain to which the cell belongs. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classStateVars_af4eb8f6371bf98d207a9155ac932278f}\label{classStateVars_af4eb8f6371bf98d207a9155ac932278f}} 
+void {\bfseries Set\+State\+Variables\+Related\+To\+Rex\+And\+GG} (int index, float Re\+Rate, int Re\+Fraction, float Max\+Angle\+Passed)
+\item 
+\mbox{\Hypertarget{classStateVars_a4ae41f06ff71fcfbcdce71be8882cda0}\label{classStateVars_a4ae41f06ff71fcfbcdce71be8882cda0}} 
+void {\bfseries Set\+Cell\+As\+Interface} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_a1c75a80e639311ad600df8ce5b540d9f}\label{classStateVars_a1c75a80e639311ad600df8ce5b540d9f}} 
+void {\bfseries Set\+Cell\+As\+Interphase} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_a059e4903682fc0dddb854461ed7b7896}\label{classStateVars_a059e4903682fc0dddb854461ed7b7896}} 
+void {\bfseries Set\+Cell\+As\+Non\+Interface} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_ac7ebc5e5f932055108860bc24e4d1266}\label{classStateVars_ac7ebc5e5f932055108860bc24e4d1266}} 
+void {\bfseries Set\+Cell\+As\+Non\+Interphase} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_ab4da210d772b6fb4ca4fd42c57f9cd3f}\label{classStateVars_ab4da210d772b6fb4ca4fd42c57f9cd3f}} 
+int {\bfseries Is\+Cell\+Interface} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_a08ad6da2cfe32f546324b81f4846558b}\label{classStateVars_a08ad6da2cfe32f546324b81f4846558b}} 
+int {\bfseries Is\+Cell\+Interphase} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_a2237906eded8a799369a5daa831abc6f}\label{classStateVars_a2237906eded8a799369a5daa831abc6f}} 
+void {\bfseries Set\+Ori\+Id\+Of\+Cell} (int index, int Ori\+Id)
+\item 
+\mbox{\Hypertarget{classStateVars_a31e463b405a05455b7281b66cea1f234}\label{classStateVars_a31e463b405a05455b7281b66cea1f234}} 
+void {\bfseries Set\+If\+Cell\+Has\+Non\+Ind\+Neighbours} (int index, int Has\+Neigh\+Non\+Ind)
+\item 
+\mbox{\Hypertarget{classStateVars_a554554529860b926164f921e7a766b74}\label{classStateVars_a554554529860b926164f921e7a766b74}} 
+void {\bfseries Set\+Lattice\+Id\+Of\+Cell} (int index, int lattice\+Value)
+\end{DoxyCompactItemize}
+\begin{Indent}\textbf{ Constructors and destructor}\par
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classStateVars_ac0814d298b86b25a9fed28df84e4c5c8}\label{classStateVars_ac0814d298b86b25a9fed28df84e4c5c8}} 
+\mbox{\hyperlink{classStateVars_ac0814d298b86b25a9fed28df84e4c5c8}{State\+Vars}} (void)
+\begin{DoxyCompactList}\small\item\em Default constructor. \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classStateVars_ac1402ffae32e7b3f5f2403bcc9e60ccd}{State\+Vars}} (int nx, int ny, int nz, float dx, int grid, bool Include\+Solute\+Diffusion, bool Include\+Rex\+And\+GG, bool Allow\+Int\+Migration, bool init\+XCEq\+Int, bool init\+XCEq\+Def)
+\begin{DoxyCompactList}\small\item\em Constructs a new instance of \mbox{\hyperlink{classStateVars}{State\+Vars}}, initialing the grid and the basic state variables, as well as the state variables related to the simulation (i.\+e. froom user defined settings) \end{DoxyCompactList}\item 
+\mbox{\hyperlink{classStateVars_a1e35b84970cd5a3218b55f4486c6f989}{$\sim$\+State\+Vars}} (void)
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Function for deleting KAM -\/ it is called after initialing all pointers with simulation-\/necessary state variables (KAM is not useful after setting dislocation density (if not read)).}\par
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classStateVars_a6cc1a2dd0be3c605b42111e8ceb67c08}\label{classStateVars_a6cc1a2dd0be3c605b42111e8ceb67c08}} 
+void {\bfseries erase\+KAM} ()
+\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Functions for retrieving state variables of cells as they are stored in CA (orientation id, lattice id)}\par
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classStateVars_a4a39921309e8e46194bd9c585df81aa8}\label{classStateVars_a4a39921309e8e46194bd9c585df81aa8}} 
+int {\bfseries Get\+Lattice\+Id\+Of\+Cell} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_ad0bfdd16dd1551783d77b292ad89f6c6}\label{classStateVars_ad0bfdd16dd1551783d77b292ad89f6c6}} 
+int {\bfseries Get\+Ori\+Id\+Of\+Cell} (int index)
+\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Functions for retrieving lattice name based on lattice Id stored in CA}\par
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classStateVars_a5310e4942e9232b8b4f2f6e8e2c1554f}\label{classStateVars_a5310e4942e9232b8b4f2f6e8e2c1554f}} 
+bool {\bfseries Is\+Cell\+FCC} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_a47a1717d79d70de03386f7603e0ddbb9}\label{classStateVars_a47a1717d79d70de03386f7603e0ddbb9}} 
+bool {\bfseries Is\+Cell\+BCC} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_a23a52072207eee9bf98a1c047d325b3b}\label{classStateVars_a23a52072207eee9bf98a1c047d325b3b}} 
+bool {\bfseries Is\+Cell\+HCP} (int index)
+\item 
+\mbox{\Hypertarget{classStateVars_aff95aad3f9eb450362a96189a42d1033}\label{classStateVars_aff95aad3f9eb450362a96189a42d1033}} 
+bool {\bfseries Is\+Lattice\+Id\+FCC} (int lattice\+Id)
+\item 
+\mbox{\Hypertarget{classStateVars_aaa494403d6ac3bfb2d60bda7bf6a03ec}\label{classStateVars_aaa494403d6ac3bfb2d60bda7bf6a03ec}} 
+bool {\bfseries Is\+Lattice\+Id\+BCC} (int lattice\+Id)
+\item 
+\mbox{\Hypertarget{classStateVars_a7ae74f4a6a5a1558f1dbb0ebffff6b1f}\label{classStateVars_a7ae74f4a6a5a1558f1dbb0ebffff6b1f}} 
+bool {\bfseries Is\+Lattice\+Id\+HCP} (int lattice\+Id)
+\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Functions for retrieving geometry data}\par
+\begin{DoxyCompactItemize}
+\item 
+std\+::vector$<$ int $>$ \mbox{\hyperlink{classStateVars_a70057612dc96f94a4821b547bd35b40a}{Get\+All\+Neighbour\+Cells}} (int index) const
+\begin{DoxyCompactList}\small\item\em Returns a vector with indices of all neighbour cells, depending on the grid and settings used in the simulation. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classStateVars_a726ffe712a99d7cecc809f7471019a53}{Get\+Neighbour\+Cell\+Offsets}} (int index, int $\ast$all\+\_\+p) const
+\begin{DoxyCompactList}\small\item\em Calculates in place the pointer to the array with indices of all neighbour cells, depending on the grid and settings used in the simulation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classStateVars_ae897fb8ea3a7691de81f2462e1ac396c}\label{classStateVars_ae897fb8ea3a7691de81f2462e1ac396c}} 
+int {\bfseries Get\+Grid\+Type} (void) const
+\item 
+int \mbox{\hyperlink{classStateVars_a1a7088112a1d9349ebc8ea95be481f2d}{IJKTo\+Index}} (int i, int j, int k) const
+\begin{DoxyCompactList}\small\item\em Converts X, Y, Z grid positions (i, j, k) to cell index. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classStateVars_afdf141170d377f8808748516c3375f49}\label{classStateVars_afdf141170d377f8808748516c3375f49}} 
+int \mbox{\hyperlink{classStateVars_afdf141170d377f8808748516c3375f49}{Get\+Index\+From\+IJK}} (int i, int j, int k) const
+\begin{DoxyCompactList}\small\item\em Alias of IJK2\+Index. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classStateVars_acaa37364cc2f03995d0b41ce043273f7}{Index\+To\+IJK}} (int index, int $\ast$i, int $\ast$j, int $\ast$k) const
+\begin{DoxyCompactList}\small\item\em Converts cell index to X, Y, Z grid positions (i, j, k) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classStateVars_a503eb95568044783c2430f1adc3807ab}\label{classStateVars_a503eb95568044783c2430f1adc3807ab}} 
+void {\bfseries Index\+To\+IJK} (int index, float $\ast$i, float $\ast$j, float $\ast$k) const
+\item 
+std\+::array$<$ int, 3 $>$ \mbox{\hyperlink{classStateVars_a614ff2c13d4661f0e86835694abd547f}{Get\+IJKFrom\+Index}} (int index) const
+\begin{DoxyCompactList}\small\item\em Similar to Index2\+IJK, but returns i, j, k as std\+:array. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{classStateVars_a124a799ee88b5731690523f0e4339b90}{Get\+XFrom\+Index}} (int index) const
+\begin{DoxyCompactList}\small\item\em Gets the X coordinate (in m) from the cell index. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{classStateVars_a3aa2ed054eab9eda906bdcf6a350f252}{Get\+YFrom\+Index}} (int index) const
+\begin{DoxyCompactList}\small\item\em Gets the Y coordinate (in m) from the cell index. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{classStateVars_aac9bb556ef84d2f6aa1cf8fd90c889dd}{Get\+ZFrom\+Index}} (int index) const
+\begin{DoxyCompactList}\small\item\em Gets the Z coordinate (in m) from the cell index. \end{DoxyCompactList}\item 
+std\+::array$<$ float, 3 $>$ \mbox{\hyperlink{classStateVars_a75445edcc526767cd5c0653d8061131c}{Get\+XYZFrom\+Index}} (float index) const
+\begin{DoxyCompactList}\small\item\em Gets the XYZ coordinates (in m) from the cell index. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{classStateVars_a9498c1efd75fc943a0dcf9104f82e612}{Get\+Distance\+Between\+Cells}} (int indexA, int indexB) const
+\begin{DoxyCompactList}\small\item\em Returns the distance between two cells (in m) \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classStateVars_a2bf9bc4938fb35105d4d33835c0489c4}{Get\+XCOf\+Cell}} (int index) const
+\begin{DoxyCompactList}\small\item\em Returns (optionally used) local carbon concentration. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classStateVars_a46a39e7427812d403beb43bd257e1c53}\label{classStateVars_a46a39e7427812d403beb43bd257e1c53}} 
+double {\bfseries Get\+Kappa\+Factor\+For\+CTrapped\+In\+Cell} (int index) const
+\item 
+\mbox{\Hypertarget{classStateVars_aa518ef4a9b153085999c19c45446d369}\label{classStateVars_aa518ef4a9b153085999c19c45446d369}} 
+double {\bfseries Get\+XCTrapped\+In\+Cell} (int index) const
+\item 
+\mbox{\Hypertarget{classStateVars_afc8ba30277c50ddaef08008650c1f670}\label{classStateVars_afc8ba30277c50ddaef08008650c1f670}} 
+void {\bfseries Convert\+Tot\+Cell\+Concentrations\+In\+Carbon\+Per\+Iron} () const
+\item 
+\mbox{\Hypertarget{classStateVars_a01408eb76fa694e9725091acdb6144ff}\label{classStateVars_a01408eb76fa694e9725091acdb6144ff}} 
+void {\bfseries Convert\+Tot\+Cell\+Concentrations\+In\+At\+Fraction} () const
+\item 
+unsigned char \mbox{\hyperlink{classStateVars_a812209214df497879555704e47cbb942}{Get\+Boundary\+Cell}} (int index) const
+\begin{DoxyCompactList}\small\item\em Returns the value of mvp\+Boundary\+Cell. This value is associated to the position of the cell on the grid. If it belongs to the boundary, it assumes a value $>$ 0. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classStateVars_af9a299d67a4ae598bb19223f900179bd}{Is\+Cell\+On\+Boundary}} (int index) const
+\begin{DoxyCompactList}\small\item\em Returns flag that determines if a cell is on a system (periodic) boundary. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Diffusion calculation}\par
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classStateVars_a8630a053b4371366c58e5ad30c1057fe}{Solute\+Diffusion\+Step}} (\mbox{\hyperlink{classThermChemKin}{Therm\+Chem\+Kin}} $\ast$th\+\_\+p, double dt, bool Allow\+Solute\+Segregation, double max\+Diffusivity\+In\+Time\+Step, bool Is\+Partitioning\+Happening\+Here, bool Is\+Solute\+Segregation\+Happening\+Here)
+\begin{DoxyCompactList}\small\item\em Solves one diffusion step. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classStateVars_a0fd73ece5388bef4d9048f25b8a75d75}\label{classStateVars_a0fd73ece5388bef4d9048f25b8a75d75}} 
+void {\bfseries Put\+Back\+Carbon\+Trapped\+And\+Calculate\+New\+Carbon\+Free\+Carbon\+Trapped} ()
+\item 
+\mbox{\Hypertarget{classStateVars_a0e89cbc99c6442010ccdb00a8e09cbbe}\label{classStateVars_a0e89cbc99c6442010ccdb00a8e09cbbe}} 
+void {\bfseries Set\+Carbon\+Trapped\+And\+Carbon\+Free\+For\+Given\+Xc\+Tot} ()
+\end{DoxyCompactItemize}
+\end{Indent}
+\doxysubsection*{Friends}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classStateVars_a124347ad500b6dc9449148b2920e221c}\label{classStateVars_a124347ad500b6dc9449148b2920e221c}} 
+class {\bfseries Microstructure}
+\end{DoxyCompactItemize}
+
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classStateVars_ac1402ffae32e7b3f5f2403bcc9e60ccd}\label{classStateVars_ac1402ffae32e7b3f5f2403bcc9e60ccd}} 
+\index{StateVars@{StateVars}!StateVars@{StateVars}}
+\index{StateVars@{StateVars}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{StateVars()}{StateVars()}}
+{\footnotesize\ttfamily State\+Vars\+::\+State\+Vars (\begin{DoxyParamCaption}\item[{int}]{nx,  }\item[{int}]{ny,  }\item[{int}]{nz,  }\item[{float}]{dx,  }\item[{int}]{grid,  }\item[{bool}]{Include\+Solute\+Diffusion,  }\item[{bool}]{Include\+Rex\+And\+GG,  }\item[{bool}]{Allow\+Int\+Migration,  }\item[{bool}]{init\+XCEq\+Int,  }\item[{bool}]{init\+XCEq\+Def }\end{DoxyParamCaption})}
+
+
+
+Constructs a new instance of \mbox{\hyperlink{classStateVars}{State\+Vars}}, initialing the grid and the basic state variables, as well as the state variables related to the simulation (i.\+e. froom user defined settings) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em nx} & Number of cells along X direction \\
+\hline
+{\em ny} & Number of cells along Y direction \\
+\hline
+{\em nz} & Number of cells along Z direction \\
+\hline
+{\em dx} & Grid spacing in m \\
+\hline
+{\em grid} & Type of grid (e.\+g. 0 for square/cubic and 1 for hexagonal)\\
+\hline
+{\em Include\+Solute\+Diffusion} & Flag signalling if solute diffusion will be simulated \\
+\hline
+{\em Include\+Rex\+And\+GG} & Flag signalling if recrystallization and/or grain growth will be simulated \\
+\hline
+{\em Allow\+Int\+Migration} & Flag signalling if phase transformations (interface migration between dissimilar phases) simulated\\
+\hline
+{\em init\+XCEq\+Int} & Flag signaling whether the carbon equilibrium at local interphase partitioning takes place before or during the diffusion step. If before (ALTHOUGH THIS IS NOT RECOMMENDED) then init\+XCEq\+Int = true and should be initialized here \\
+\hline
+{\em init\+XCEq\+Def} & Flag signaling whether the carbon equilibrium between free lattice and local defects takes place before or during the diffusion step. If before (ALTHOUGH THIS IS NOT RECOMMENDED) then init\+XCEq\+Int = true and should be initialized here \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classStateVars_a1e35b84970cd5a3218b55f4486c6f989}\label{classStateVars_a1e35b84970cd5a3218b55f4486c6f989}} 
+\index{StateVars@{StateVars}!````~StateVars@{$\sim$StateVars}}
+\index{````~StateVars@{$\sim$StateVars}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{$\sim$StateVars()}{~StateVars()}}
+{\footnotesize\ttfamily State\+Vars\+::$\sim$\+State\+Vars (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Destructor. 
+
+Takes care of freeing memory assigned to pointers 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classStateVars_a70057612dc96f94a4821b547bd35b40a}\label{classStateVars_a70057612dc96f94a4821b547bd35b40a}} 
+\index{StateVars@{StateVars}!GetAllNeighbourCells@{GetAllNeighbourCells}}
+\index{GetAllNeighbourCells@{GetAllNeighbourCells}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetAllNeighbourCells()}{GetAllNeighbourCells()}}
+{\footnotesize\ttfamily std\+::vector$<$ int $>$ State\+Vars\+::\+Get\+All\+Neighbour\+Cells (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption}) const}
+
+
+
+Returns a vector with indices of all neighbour cells, depending on the grid and settings used in the simulation. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Index of cell for which to return the neighbour cells\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A vector with all neighbours 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a812209214df497879555704e47cbb942}\label{classStateVars_a812209214df497879555704e47cbb942}} 
+\index{StateVars@{StateVars}!GetBoundaryCell@{GetBoundaryCell}}
+\index{GetBoundaryCell@{GetBoundaryCell}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetBoundaryCell()}{GetBoundaryCell()}}
+{\footnotesize\ttfamily unsigned char State\+Vars\+::\+Get\+Boundary\+Cell (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the value of mvp\+Boundary\+Cell. This value is associated to the position of the cell on the grid. If it belongs to the boundary, it assumes a value $>$ 0. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The value of mvp\+Boundary\+Cell, which is $>$ 0 if the cell belongs to the periodic boundary. 0 otherwise. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a9498c1efd75fc943a0dcf9104f82e612}\label{classStateVars_a9498c1efd75fc943a0dcf9104f82e612}} 
+\index{StateVars@{StateVars}!GetDistanceBetweenCells@{GetDistanceBetweenCells}}
+\index{GetDistanceBetweenCells@{GetDistanceBetweenCells}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetDistanceBetweenCells()}{GetDistanceBetweenCells()}}
+{\footnotesize\ttfamily float State\+Vars\+::\+Get\+Distance\+Between\+Cells (\begin{DoxyParamCaption}\item[{int}]{indexA,  }\item[{int}]{indexB }\end{DoxyParamCaption}) const}
+
+
+
+Returns the distance between two cells (in m) 
+
+Gets the distance between two cells in m (taking care of periodic boundaries)
+
+
+\begin{DoxyParams}{Parameters}
+{\em indexA} & index of first cell \\
+\hline
+{\em indexB} & index of second cell\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+distance between the two cells in m 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a614ff2c13d4661f0e86835694abd547f}\label{classStateVars_a614ff2c13d4661f0e86835694abd547f}} 
+\index{StateVars@{StateVars}!GetIJKFromIndex@{GetIJKFromIndex}}
+\index{GetIJKFromIndex@{GetIJKFromIndex}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetIJKFromIndex()}{GetIJKFromIndex()}}
+{\footnotesize\ttfamily std\+::array$<$ int, 3 $>$ State\+Vars\+::\+Get\+IJKFrom\+Index (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption}) const}
+
+
+
+Similar to Index2\+IJK, but returns i, j, k as std\+:array. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+X, Y, Z coordinates as grid positions as std\+::array 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a726ffe712a99d7cecc809f7471019a53}\label{classStateVars_a726ffe712a99d7cecc809f7471019a53}} 
+\index{StateVars@{StateVars}!GetNeighbourCellOffsets@{GetNeighbourCellOffsets}}
+\index{GetNeighbourCellOffsets@{GetNeighbourCellOffsets}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetNeighbourCellOffsets()}{GetNeighbourCellOffsets()}}
+{\footnotesize\ttfamily void State\+Vars\+::\+Get\+Neighbour\+Cell\+Offsets (\begin{DoxyParamCaption}\item[{int}]{index,  }\item[{int $\ast$}]{all\+\_\+p }\end{DoxyParamCaption}) const}
+
+
+
+Calculates in place the pointer to the array with indices of all neighbour cells, depending on the grid and settings used in the simulation. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Index of cell for which to return the neighbour cells \\
+\hline
+{\em $\ast$all\+\_\+p} & Pointer to array of offsets for all neighbours \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classStateVars_a2bf9bc4938fb35105d4d33835c0489c4}\label{classStateVars_a2bf9bc4938fb35105d4d33835c0489c4}} 
+\index{StateVars@{StateVars}!GetXCOfCell@{GetXCOfCell}}
+\index{GetXCOfCell@{GetXCOfCell}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetXCOfCell()}{GetXCOfCell()}}
+{\footnotesize\ttfamily double State\+Vars\+::\+Get\+XCOf\+Cell (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns (optionally used) local carbon concentration. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Local carbon concentration of cell in at. fraction is available, otherwise, returns -\/1 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a124a799ee88b5731690523f0e4339b90}\label{classStateVars_a124a799ee88b5731690523f0e4339b90}} 
+\index{StateVars@{StateVars}!GetXFromIndex@{GetXFromIndex}}
+\index{GetXFromIndex@{GetXFromIndex}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetXFromIndex()}{GetXFromIndex()}}
+{\footnotesize\ttfamily float State\+Vars\+::\+Get\+XFrom\+Index (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption}) const}
+
+
+
+Gets the X coordinate (in m) from the cell index. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The X coordinate in m 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a75445edcc526767cd5c0653d8061131c}\label{classStateVars_a75445edcc526767cd5c0653d8061131c}} 
+\index{StateVars@{StateVars}!GetXYZFromIndex@{GetXYZFromIndex}}
+\index{GetXYZFromIndex@{GetXYZFromIndex}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetXYZFromIndex()}{GetXYZFromIndex()}}
+{\footnotesize\ttfamily std\+::array$<$ float, 3 $>$ State\+Vars\+::\+Get\+XYZFrom\+Index (\begin{DoxyParamCaption}\item[{float}]{index }\end{DoxyParamCaption}) const}
+
+
+
+Gets the XYZ coordinates (in m) from the cell index. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The XYZ coordinates in m as an std\+::array 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a3aa2ed054eab9eda906bdcf6a350f252}\label{classStateVars_a3aa2ed054eab9eda906bdcf6a350f252}} 
+\index{StateVars@{StateVars}!GetYFromIndex@{GetYFromIndex}}
+\index{GetYFromIndex@{GetYFromIndex}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetYFromIndex()}{GetYFromIndex()}}
+{\footnotesize\ttfamily float State\+Vars\+::\+Get\+YFrom\+Index (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption}) const}
+
+
+
+Gets the Y coordinate (in m) from the cell index. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The Y coordinate in m 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_aac9bb556ef84d2f6aa1cf8fd90c889dd}\label{classStateVars_aac9bb556ef84d2f6aa1cf8fd90c889dd}} 
+\index{StateVars@{StateVars}!GetZFromIndex@{GetZFromIndex}}
+\index{GetZFromIndex@{GetZFromIndex}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{GetZFromIndex()}{GetZFromIndex()}}
+{\footnotesize\ttfamily float State\+Vars\+::\+Get\+ZFrom\+Index (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption}) const}
+
+
+
+Gets the Z coordinate (in m) from the cell index. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+The Z coordinate in m 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a1a7088112a1d9349ebc8ea95be481f2d}\label{classStateVars_a1a7088112a1d9349ebc8ea95be481f2d}} 
+\index{StateVars@{StateVars}!IJKToIndex@{IJKToIndex}}
+\index{IJKToIndex@{IJKToIndex}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{IJKToIndex()}{IJKToIndex()}}
+{\footnotesize\ttfamily int State\+Vars\+::\+IJKTo\+Index (\begin{DoxyParamCaption}\item[{int}]{i,  }\item[{int}]{j,  }\item[{int}]{k }\end{DoxyParamCaption}) const}
+
+
+
+Converts X, Y, Z grid positions (i, j, k) to cell index. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em i} & X coordinate as grid position (dimensionless) \\
+\hline
+{\em j} & Y coordinate as grid position (dimensionless) \\
+\hline
+{\em k} & Z coordinate as grid position (dimensionless)\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Cell index 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_acaa37364cc2f03995d0b41ce043273f7}\label{classStateVars_acaa37364cc2f03995d0b41ce043273f7}} 
+\index{StateVars@{StateVars}!IndexToIJK@{IndexToIJK}}
+\index{IndexToIJK@{IndexToIJK}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{IndexToIJK()}{IndexToIJK()}}
+{\footnotesize\ttfamily void State\+Vars\+::\+Index\+To\+IJK (\begin{DoxyParamCaption}\item[{int}]{index,  }\item[{int $\ast$}]{i,  }\item[{int $\ast$}]{j,  }\item[{int $\ast$}]{k }\end{DoxyParamCaption}) const}
+
+
+
+Converts cell index to X, Y, Z grid positions (i, j, k) 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index \\
+\hline
+{\em $\ast$i} & X coordinate as grid position returned by pointer value \\
+\hline
+{\em $\ast$j} & Y coordinate as grid position returned by pointer value \\
+\hline
+{\em $\ast$k} & Z coordinate as grid position returned by pointer value \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classStateVars_af9a299d67a4ae598bb19223f900179bd}\label{classStateVars_af9a299d67a4ae598bb19223f900179bd}} 
+\index{StateVars@{StateVars}!IsCellOnBoundary@{IsCellOnBoundary}}
+\index{IsCellOnBoundary@{IsCellOnBoundary}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{IsCellOnBoundary()}{IsCellOnBoundary()}}
+{\footnotesize\ttfamily bool State\+Vars\+::\+Is\+Cell\+On\+Boundary (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns flag that determines if a cell is on a system (periodic) boundary. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+A boolean\+: true if cell belongs to periodic boundary, false otherwise. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classStateVars_a1065663e9e485cb2c13d867b298cda60}\label{classStateVars_a1065663e9e485cb2c13d867b298cda60}} 
+\index{StateVars@{StateVars}!SetEBSDRelatedStuffForRexAndGG@{SetEBSDRelatedStuffForRexAndGG}}
+\index{SetEBSDRelatedStuffForRexAndGG@{SetEBSDRelatedStuffForRexAndGG}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{SetEBSDRelatedStuffForRexAndGG()}{SetEBSDRelatedStuffForRexAndGG()}}
+{\footnotesize\ttfamily void State\+Vars\+::\+Set\+EBSDRelated\+Stuff\+For\+Rex\+And\+GG (\begin{DoxyParamCaption}\item[{int}]{index,  }\item[{float}]{CI,  }\item[{int}]{RX,  }\item[{float}]{rho }\end{DoxyParamCaption})}
+
+
+
+Sets id of grain to which the cell belongs. 
+
+Initialises measurement-\/related quantities when microstructure comes from EBSD $\ast$.
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Cell index \\
+\hline
+{\em grain\+Id} & Grain id\\
+\hline
+{\em index} & the index of cell for which the state variables will be set \\
+\hline
+{\em CI} & the confidence index of the measured pixel \\
+\hline
+{\em RX} & state variable regarding the state of the pixel (normally non-\/recrystallized for deformed inputs) -\/ unless we read partially recrystallized state or state after previous simulation \\
+\hline
+{\em rho} & the dislocation density measured / calculated / simulated from other software \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classStateVars_a8630a053b4371366c58e5ad30c1057fe}\label{classStateVars_a8630a053b4371366c58e5ad30c1057fe}} 
+\index{StateVars@{StateVars}!SoluteDiffusionStep@{SoluteDiffusionStep}}
+\index{SoluteDiffusionStep@{SoluteDiffusionStep}!StateVars@{StateVars}}
+\doxysubsubsection{\texorpdfstring{SoluteDiffusionStep()}{SoluteDiffusionStep()}}
+{\footnotesize\ttfamily void State\+Vars\+::\+Solute\+Diffusion\+Step (\begin{DoxyParamCaption}\item[{\mbox{\hyperlink{classThermChemKin}{Therm\+Chem\+Kin}} $\ast$}]{TCK\+\_\+p,  }\item[{double}]{dt,  }\item[{bool}]{Allow\+Solute\+Segregation,  }\item[{double}]{max\+Diffusivity\+In\+Time\+Step,  }\item[{bool}]{Is\+Partitioning\+Happening\+Here,  }\item[{bool}]{Is\+Solute\+Segregation\+Happening\+Here }\end{DoxyParamCaption})}
+
+
+
+Solves one diffusion step. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em TCK\+\_\+p} & pointer to \mbox{\hyperlink{classThermChemKin}{Therm\+Chem\+Kin}} instance \\
+\hline
+{\em dt} & predetermined time step \\
+\hline
+{\em Allow\+Solute\+Segregation} & bool on whether we have solute trapping in general during simulation \\
+\hline
+{\em max\+Diffusivity\+In\+Time\+Step} & the maximum value of diffusivity between neighbour cells calculated in microstructure class \\
+\hline
+{\em Is\+Partitioning\+Happening\+Here} & bool on whether the diffusion equation includes the solute trapping equilibrium (i.\+e. if trapping is part of the numerical system Ax=b) \\
+\hline
+{\em Is\+Solute\+Segregation\+Happening\+Here} & bool on whether the diffusion equation includes the solute trapping equilibrium (i.\+e. if trapping is part of the numerical system Ax=b) \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/state\+Vars.\+h\item 
+src/state\+Vars.\+cpp\end{DoxyCompactItemize}

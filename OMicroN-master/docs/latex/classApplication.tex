@@ -1,0 +1,52 @@
+\hypertarget{classApplication}{}\doxysection{Application Class Reference}
+\label{classApplication}\index{Application@{Application}}
+
+
+Manages the overall application flow.  
+
+
+
+
+{\ttfamily \#include $<$application.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classApplication_a82426cba4898182b2b023bd66f105781}{Application}} (const std\+::string \&config\+File)
+\begin{DoxyCompactList}\small\item\em Constructs an \mbox{\hyperlink{classApplication}{Application}} object with a configuration file. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classApplication_a68965449404743bf1add056784d6cf81}\label{classApplication_a68965449404743bf1add056784d6cf81}} 
+void \mbox{\hyperlink{classApplication_a68965449404743bf1add056784d6cf81}{run}} ()
+\begin{DoxyCompactList}\small\item\em Runs the application. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages the overall application flow. 
+
+This class handles the initialization of settings, running the simulation based on these settings, initializing the log file, managing the microstructure class and performing all the simulation steps. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classApplication_a82426cba4898182b2b023bd66f105781}\label{classApplication_a82426cba4898182b2b023bd66f105781}} 
+\index{Application@{Application}!Application@{Application}}
+\index{Application@{Application}!Application@{Application}}
+\doxysubsubsection{\texorpdfstring{Application()}{Application()}}
+{\footnotesize\ttfamily Application\+::\+Application (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{input\+File }\end{DoxyParamCaption})}
+
+
+
+Constructs an \mbox{\hyperlink{classApplication}{Application}} object with a configuration file. 
+
+Constructs an \mbox{\hyperlink{classApplication}{Application}} object with a user input (parameter) file.
+
+
+\begin{DoxyParams}{Parameters}
+{\em config\+File} & Path to the configuration file.\\
+\hline
+{\em input\+File} & Path to the input (parameter) file. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/application.\+h\item 
+src/application.\+cpp\end{DoxyCompactItemize}

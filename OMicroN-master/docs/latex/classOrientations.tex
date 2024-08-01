@@ -1,0 +1,272 @@
+\hypertarget{classOrientations}{}\doxysection{Orientations Class Reference}
+\label{classOrientations}\index{Orientations@{Orientations}}
+
+
+Class to handle orientations and symmetry operations.  
+
+
+
+
+{\ttfamily \#include $<$orientation.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classOrientations_a1e365d83747aceaca1005aa6ca151ead}{Orientations}} (void)
+\begin{DoxyCompactList}\small\item\em Default constructor for the \mbox{\hyperlink{classOrientations}{Orientations}} class. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classOrientations_a41ea077aa1eb9c88082f25f3822c9f1a}{Set\+Orientation\+Parameters}} (const \mbox{\hyperlink{classUserSettings}{User\+Settings}} \&us)
+\begin{DoxyCompactList}\small\item\em Destructor (no need). \end{DoxyCompactList}\item 
+Eigen\+::\+Vector3f \mbox{\hyperlink{classOrientations_ad977ea6346f230b53b8d4191caef6a56}{Get\+Euler\+Angles}} (const int id) const
+\begin{DoxyCompactList}\small\item\em Retrieves the Euler angles for a given orientation ID. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classOrientations_aed2441322d86274bf198aa1db740a582}\label{classOrientations_aed2441322d86274bf198aa1db740a582}} 
+void \mbox{\hyperlink{classOrientations_aed2441322d86274bf198aa1db740a582}{Debug\+Print\+Orientations}} () const
+\begin{DoxyCompactList}\small\item\em Prints all orientations for debugging purposes. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{Indent}\textbf{ Euler Grid and Problem Size}\par
+\begin{DoxyCompactItemize}
+\item 
+float \mbox{\hyperlink{classOrientations_a00c4ec06dddd6523e135aabe9ce7dbc3}{Lim}} (const int i) const
+\begin{DoxyCompactList}\small\item\em Returns the limit of Euler space for a given component. \end{DoxyCompactList}\item 
+int \mbox{\hyperlink{classOrientations_af838da2a41caad5022285c69c595ab9e}{add\+Ori\+And\+Return\+Id}} (const Eigen\+::\+Vector3f \&ea)
+\begin{DoxyCompactList}\small\item\em Adds an orientation and returns its ID. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{classOrientations_a4baf9e88945cf88170dd5dc2842da075}{misorientationQ}} (const Eigen\+::\+Quaternionf q0, const Eigen\+::\+Quaternionf q1) const
+\begin{DoxyCompactList}\small\item\em Calculates the misorientation between two quaternions. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{classOrientations_aa80c85ba7bc76a7944e305a30bd45488}{Distance\+Of\+Boundary\+From\+CSL19a}} (const Eigen\+::\+Vector3f \&ea1, const Eigen\+::\+Vector3f \&ea2) const
+\begin{DoxyCompactList}\small\item\em Calculates the distance of the boundary from CSL19a. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{classOrientations_a03c037faf3cf1f2df1e6f4bab22e6389}{Calculate\+Misorientation\+Between\+Two\+Ori\+Ids}} (const int Id1, const int Id2) const
+\begin{DoxyCompactList}\small\item\em Calculates the misorientation between two orientations given their IDs. \end{DoxyCompactList}\item 
+float \mbox{\hyperlink{classOrientations_a87cf19d2b26804be94e28bf834266c15}{Calc\+Misorientation\+From\+Euler\+Angles}} (const Eigen\+::\+Vector3f \&ea1, const Eigen\+::\+Vector3f \&ea2) const
+\begin{DoxyCompactList}\small\item\em Calculates the misorientation between two orientations given their Euler angles. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+
+
+\doxysubsection{Detailed Description}
+Class to handle orientations and symmetry operations. 
+
+This class manages the orientations and crystal symmetries of materials in the OMicroN simulation. It provides functionalities to add and retrieve orientations, convert between Euler angles and quaternions, and calculate misorientations and other orientation-\/related metrics.
+
+\mbox{\hyperlink{classOrientations}{Orientations}} are stored (provided/exported) as Euler angles, but all operations are performed using quaternions. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classOrientations_a1e365d83747aceaca1005aa6ca151ead}\label{classOrientations_a1e365d83747aceaca1005aa6ca151ead}} 
+\index{Orientations@{Orientations}!Orientations@{Orientations}}
+\index{Orientations@{Orientations}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{Orientations()}{Orientations()}}
+{\footnotesize\ttfamily Orientations\+::\+Orientations (\begin{DoxyParamCaption}\item[{void}]{ }\end{DoxyParamCaption})}
+
+
+
+Default constructor for the \mbox{\hyperlink{classOrientations}{Orientations}} class. 
+
+Initializes an instance of the \mbox{\hyperlink{classOrientations}{Orientations}} class. This constructor does not perform any specific initialization tasks beyond setting up the class instance.
+
+This constructor initializes an instance of the \mbox{\hyperlink{classOrientations}{Orientations}} class. As it is a default constructor, it does not perform any specific actions or initialize any member variables. 
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classOrientations_af838da2a41caad5022285c69c595ab9e}\label{classOrientations_af838da2a41caad5022285c69c595ab9e}} 
+\index{Orientations@{Orientations}!addOriAndReturnId@{addOriAndReturnId}}
+\index{addOriAndReturnId@{addOriAndReturnId}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{addOriAndReturnId()}{addOriAndReturnId()}}
+{\footnotesize\ttfamily int Orientations\+::add\+Ori\+And\+Return\+Id (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Vector3f \&}]{ea }\end{DoxyParamCaption})}
+
+
+
+Adds an orientation and returns its ID. 
+
+\begin{DoxyReturn}{Returns}
+ID of the added orientation.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em ea} & Euler angles. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+ID of the added orientation. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classOrientations_a87cf19d2b26804be94e28bf834266c15}\label{classOrientations_a87cf19d2b26804be94e28bf834266c15}} 
+\index{Orientations@{Orientations}!CalcMisorientationFromEulerAngles@{CalcMisorientationFromEulerAngles}}
+\index{CalcMisorientationFromEulerAngles@{CalcMisorientationFromEulerAngles}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{CalcMisorientationFromEulerAngles()}{CalcMisorientationFromEulerAngles()}}
+{\footnotesize\ttfamily float Orientations\+::\+Calc\+Misorientation\+From\+Euler\+Angles (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Vector3f \&}]{ea1,  }\item[{const Eigen\+::\+Vector3f \&}]{ea2 }\end{DoxyParamCaption}) const}
+
+
+
+Calculates the misorientation between two orientations given their Euler angles. 
+
+Calculates the misorientation angle between two orientations given their Euler angles.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ea1} & Euler angles of the first orientation. \\
+\hline
+{\em ea2} & Euler angles of the second orientation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Misorientation angle.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em ea1} & Euler angles of the first orientation. \\
+\hline
+{\em ea2} & Euler angles of the second orientation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Misorientation angle in degrees. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classOrientations_a03c037faf3cf1f2df1e6f4bab22e6389}\label{classOrientations_a03c037faf3cf1f2df1e6f4bab22e6389}} 
+\index{Orientations@{Orientations}!CalculateMisorientationBetweenTwoOriIds@{CalculateMisorientationBetweenTwoOriIds}}
+\index{CalculateMisorientationBetweenTwoOriIds@{CalculateMisorientationBetweenTwoOriIds}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{CalculateMisorientationBetweenTwoOriIds()}{CalculateMisorientationBetweenTwoOriIds()}}
+{\footnotesize\ttfamily float Orientations\+::\+Calculate\+Misorientation\+Between\+Two\+Ori\+Ids (\begin{DoxyParamCaption}\item[{const int}]{Id1,  }\item[{const int}]{Id2 }\end{DoxyParamCaption}) const}
+
+
+
+Calculates the misorientation between two orientations given their IDs. 
+
+Calculates the misorientation angle between two orientations given their IDs.
+
+
+\begin{DoxyParams}{Parameters}
+{\em Id1} & ID of the first orientation. \\
+\hline
+{\em Id2} & ID of the second orientation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Misorientation angle.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em Id1} & ID of the first orientation. \\
+\hline
+{\em Id2} & ID of the second orientation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Misorientation angle in degrees. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classOrientations_aa80c85ba7bc76a7944e305a30bd45488}\label{classOrientations_aa80c85ba7bc76a7944e305a30bd45488}} 
+\index{Orientations@{Orientations}!DistanceOfBoundaryFromCSL19a@{DistanceOfBoundaryFromCSL19a}}
+\index{DistanceOfBoundaryFromCSL19a@{DistanceOfBoundaryFromCSL19a}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{DistanceOfBoundaryFromCSL19a()}{DistanceOfBoundaryFromCSL19a()}}
+{\footnotesize\ttfamily float Orientations\+::\+Distance\+Of\+Boundary\+From\+CSL19a (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Vector3f \&}]{ea1,  }\item[{const Eigen\+::\+Vector3f \&}]{ea2 }\end{DoxyParamCaption}) const}
+
+
+
+Calculates the distance of the boundary from CSL19a. 
+
+Calculates the distance of the boundary from the CSL19a for given Euler angles.
+
+
+\begin{DoxyParams}{Parameters}
+{\em ea1} & Euler angles of the first phase. \\
+\hline
+{\em ea2} & Euler angles of the second phase. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Misorientation angle.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em ea1} & Euler angles of the first orientation. \\
+\hline
+{\em ea2} & Euler angles of the second orientation. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Misorientation angle in degrees. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classOrientations_ad977ea6346f230b53b8d4191caef6a56}\label{classOrientations_ad977ea6346f230b53b8d4191caef6a56}} 
+\index{Orientations@{Orientations}!GetEulerAngles@{GetEulerAngles}}
+\index{GetEulerAngles@{GetEulerAngles}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{GetEulerAngles()}{GetEulerAngles()}}
+{\footnotesize\ttfamily Eigen\+::\+Vector3f Orientations\+::\+Get\+Euler\+Angles (\begin{DoxyParamCaption}\item[{const int}]{id }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Retrieves the Euler angles for a given orientation ID. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em id} & Orientation ID. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Euler angles as an Eigen\+::\+Vector3f. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classOrientations_a00c4ec06dddd6523e135aabe9ce7dbc3}\label{classOrientations_a00c4ec06dddd6523e135aabe9ce7dbc3}} 
+\index{Orientations@{Orientations}!Lim@{Lim}}
+\index{Lim@{Lim}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{Lim()}{Lim()}}
+{\footnotesize\ttfamily float Orientations\+::\+Lim (\begin{DoxyParamCaption}\item[{const int}]{i }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the limit of Euler space for a given component. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em i} & Component index (0\+:phi1, 1\+:Phi, 2\+:phi2). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Limit of Euler space for the component. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classOrientations_a4baf9e88945cf88170dd5dc2842da075}\label{classOrientations_a4baf9e88945cf88170dd5dc2842da075}} 
+\index{Orientations@{Orientations}!misorientationQ@{misorientationQ}}
+\index{misorientationQ@{misorientationQ}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{misorientationQ()}{misorientationQ()}}
+{\footnotesize\ttfamily float Orientations\+::misorientationQ (\begin{DoxyParamCaption}\item[{const Eigen\+::\+Quaternionf}]{q0,  }\item[{const Eigen\+::\+Quaternionf}]{q1 }\end{DoxyParamCaption}) const}
+
+
+
+Calculates the misorientation between two quaternions. 
+
+Calculates the misorientation angle between two quaternions.
+
+
+\begin{DoxyParams}{Parameters}
+{\em q0} & First quaternion. \\
+\hline
+{\em q1} & Second quaternion. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Misorientation angle.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em q0} & First quaternion. \\
+\hline
+{\em q1} & Second quaternion. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Misorientation angle in degrees. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classOrientations_a41ea077aa1eb9c88082f25f3822c9f1a}\label{classOrientations_a41ea077aa1eb9c88082f25f3822c9f1a}} 
+\index{Orientations@{Orientations}!SetOrientationParameters@{SetOrientationParameters}}
+\index{SetOrientationParameters@{SetOrientationParameters}!Orientations@{Orientations}}
+\doxysubsubsection{\texorpdfstring{SetOrientationParameters()}{SetOrientationParameters()}}
+{\footnotesize\ttfamily void Orientations\+::\+Set\+Orientation\+Parameters (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classUserSettings}{User\+Settings}} \&}]{us }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Destructor (no need). 
+
+Sets the orientation parameters from user settings.
+
+
+\begin{DoxyParams}{Parameters}
+{\em us} & \mbox{\hyperlink{classUserSettings}{User\+Settings}} object containing the parameters. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/\mbox{\hyperlink{orientation_8h}{orientation.\+h}}\item 
+src/orientation.\+cpp\end{DoxyCompactItemize}

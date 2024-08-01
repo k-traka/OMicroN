@@ -3,7 +3,6 @@
    cpp-file containing stateVars class implementation
 */
 
-
 #include <algorithm>
 #include <cmath>
 #include <cstring>
@@ -20,22 +19,20 @@
  * @param dx Grid spacing in m
  * @param grid Type of grid (e.g. 0 for square/cubic and 1 for hexagonal)
 
- * @param IncludeSoluteDiffusion Flag signalling if solute diffusion will be simulated 
- * @param IncludeRexAndGG Flag signalling if recrystallization and/or grain growth will be simulated 
- * @param AllowIntMigration Flag signalling if phase transformations (interface migration between dissimilar phases) simulated 
+ * @param IncludeSoluteDiffusion Flag signalling if solute diffusion will be simulated
+ * @param IncludeRexAndGG Flag signalling if recrystallization and/or grain growth will be simulated
+ * @param AllowIntMigration Flag signalling if phase transformations (interface migration between dissimilar phases) simulated
 
- * @param initXCEqInt Flag signaling whether the carbon equilibrium at local interphase partitioning takes place before or during the diffusion step. If before (ALTHOUGH THIS IS NOT RECOMMENDED) then initXCEqInt = true and should be initialized here 
- * @param initXCEqDef Flag signaling whether the carbon equilibrium between free lattice and local defects takes place before or during the diffusion step. If before (ALTHOUGH THIS IS NOT RECOMMENDED) then initXCEqInt = true and should be initialized here 
+ * @param initXCEqInt Flag signaling whether the carbon equilibrium at local interphase partitioning takes place before or during the diffusion step. If before (ALTHOUGH THIS IS NOT RECOMMENDED) then initXCEqInt = true and should be initialized here
+ * @param initXCEqDef Flag signaling whether the carbon equilibrium between free lattice and local defects takes place before or during the diffusion step. If before (ALTHOUGH THIS IS NOT RECOMMENDED) then initXCEqInt = true and should be initialized here
  */
-
-
 
 StateVars::StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSoluteDiffusion, bool IncludeRexAndGG, bool AllowIntMigration, bool initXCEqInt, bool initXCEqDef)
     : StateVars()
 {
-   LOG_F(INFO, "Initializing Cells");
+    LOG_F(INFO, "Initializing Cells");
 
-   LOG_F(INFO, "Grid of: nx=%d, ny=%d, nz=%d, dx=%g", nx, ny, nz, dx);
+    LOG_F(INFO, "Grid of: nx=%d, ny=%d, nz=%d, dx=%g", nx, ny, nz, dx);
 
     int i, j, k, mindex;
     int nearest[6];   // Relative indices (1D array) of nearest neighbours
@@ -78,7 +75,6 @@ StateVars::StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSol
             mvNAll = 26;
             mvMaxBoundaryAreaPerVol = floor(1. / mvDx / 4.); // in Cub(1,2) grid the max boundary area is a quarter of the side, and it corresponds to the nearest neighbours.
         }
-
     }
     else
     {
@@ -88,8 +84,9 @@ StateVars::StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSol
         }
         if (mvNz != 1)
         {
-           ABORT_F("3D Simulation in hexagonal grid not supported. CHECK INPUT FILE SETTINGS GridType and Nz");
+            ABORT_F("3D Simulation in hexagonal grid not supported. CHECK INPUT FILE SETTINGS GridType and Nz");
         }
+        // we are then in 2D hexagonal
         mvDx = dx;
         mvDx2 = mvDx;        // This means that areas are treated as lengths
         mvDx3 = mvDx * mvDx; // And volumes as areas!!
@@ -100,10 +97,6 @@ StateVars::StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSol
         mvNAll = 6;
         mvMaxBoundaryAreaPerVol = floor(1. / mvDx / 1.5); // in Hex(1,1) grid all boundaries have are per cell volume equal to side/1.5 (regular hexagons)
     }
-
-
-  
-
 
     // init neighbour lists
     if (mvGridType == 0)
@@ -176,117 +169,133 @@ StateVars::StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSol
         mvpAllNeighbours[mvNNearest + i] = next[i];
     for (i = 0; i < mvNNextNext; i++)
         mvpAllNeighbours[mvNNearest + mvNNext + i] = next_next[i];
-       
-       
-       //initialize state variables related to all simulations
+
+    // initialize state variables related to all simulations
     InitEBSDRelatedStuff();
     InitializeBasicStateVariables();
 
     InitBoundaryCells();
+    std::cout << " fine 5" << std::endl;
 
     validateAllNeighbourCells();
-
-
-
-
 
     if (mvIncludeRexAndGG || AllowIntMigration)
     {
         InitializeStateVariablesRelatedToInterfaceMotion();
     }
 
-    std::cout<<" fine 5"<<std::endl;
-
+    std::cout << " fine 5" << std::endl;
 
     if (IncludeSoluteDiffusion)
     {
-        allocateCarbonVectors(initXCEqInt,initXCEqDef);
+        allocateCarbonVectors(initXCEqInt, initXCEqDef);
         InitializeSoluteRedistributionAndDefectsVariables();
         InitDiffusivitiesVector();
     }
 }
 
-
 /** @brief Destructor
  *
  * Takes care of freeing memory assigned to pointers
  */
-StateVars::~StateVars() {
+StateVars::~StateVars()
+{
     // Check and delete raw pointers
-    if (mvpXC) {
+    if (mvpXC)
+    {
         delete mvpXC;
         mvpXC = nullptr;
     }
-    if (mvpXCTrapped) {
+    if (mvpXCTrapped)
+    {
         delete mvpXCTrapped;
         mvpXCTrapped = nullptr;
     }
-    if (mvpLatticeId) {
+    if (mvpLatticeId)
+    {
         delete[] mvpLatticeId;
         mvpLatticeId = nullptr;
     }
-    if (mvpBoundaryCell) {
+    if (mvpBoundaryCell)
+    {
         delete[] mvpBoundaryCell;
         mvpBoundaryCell = nullptr;
     }
-    if (mvpIsInterface) {
+    if (mvpIsInterface)
+    {
         delete[] mvpIsInterface;
         mvpIsInterface = nullptr;
     }
-    if (mvpIsInterphase) {
+    if (mvpIsInterphase)
+    {
         delete[] mvpIsInterphase;
         mvpIsInterphase = nullptr;
     }
-    if (mvpKappaFactorForCTrappedDefects) {
+    if (mvpKappaFactorForCTrappedDefects)
+    {
         delete[] mvpKappaFactorForCTrappedDefects;
         mvpKappaFactorForCTrappedDefects = nullptr;
     }
-    if (mvpDiffusivityC_Ratio) {
+    if (mvpDiffusivityC_Ratio)
+    {
         delete[] mvpDiffusivityC_Ratio;
         mvpDiffusivityC_Ratio = nullptr;
     }
-    if (mvpOneOfTheNeighboursGrowingInto) {
+    if (mvpOneOfTheNeighboursGrowingInto)
+    {
         delete[] mvpOneOfTheNeighboursGrowingInto;
         mvpOneOfTheNeighboursGrowingInto = nullptr;
     }
-    if (mvpConsumptionRate) {
+    if (mvpConsumptionRate)
+    {
         delete[] mvpConsumptionRate;
         mvpConsumptionRate = nullptr;
     }
-    if (mvpConsumedFraction) {
+    if (mvpConsumedFraction)
+    {
         delete[] mvpConsumedFraction;
         mvpConsumedFraction = nullptr;
     }
-    if (mvpCSLRelationshipNow) {
+    if (mvpCSLRelationshipNow)
+    {
         delete[] mvpCSLRelationshipNow;
         mvpCSLRelationshipNow = nullptr;
     }
-    if (mvpCI) {
+    if (mvpCI)
+    {
         delete[] mvpCI;
         mvpCI = nullptr;
     }
-    if (mvpHasNeighNonInd) {
+    if (mvpHasNeighNonInd)
+    {
         delete[] mvpHasNeighNonInd;
         mvpHasNeighNonInd = nullptr;
     }
-    if (mvpKAM) {
+    if (mvpKAM)
+    {
         delete[] mvpKAM;
         mvpKAM = nullptr;
     }
-    if (mvpRho) {
+    if (mvpRho)
+    {
         delete[] mvpRho;
         mvpRho = nullptr;
     }
-    if (mvpRX) {
+    if (mvpRX)
+    {
         delete[] mvpRX;
         mvpRX = nullptr;
     }
-    if (mvpMaxGbPassed) {
+    if (mvpMaxGbPassed)
+    {
         delete[] mvpMaxGbPassed;
         mvpMaxGbPassed = nullptr;
     }
 }
 
+
+/** @brief Initializes pointers with state variables related any type of simulation.
+ */
 void StateVars::InitializeBasicStateVariables()
 {
     mvpBoundaryCell = new unsigned char[mvN];
@@ -295,7 +304,6 @@ void StateVars::InitializeBasicStateVariables()
     {
         mvpLatticeId = new int[mvN];
     }
-
 
     mvpOriId.resize(mvN);
     std::fill(mvpOriId.begin(), mvpOriId.end(), -1);
@@ -312,21 +320,25 @@ void StateVars::InitializeBasicStateVariables()
     }
 }
 
+/** @brief Initializes pointers with state variables related to simulating interface migration (i.e. recrystallization / grain growth / phase transformation).
+ */
 void StateVars::InitializeStateVariablesRelatedToInterfaceMotion()
 {
-        mvpConsumptionRate = new float[mvN];
-        std::fill(mvpConsumptionRate, mvpConsumptionRate + mvN, 0.); // Fill with zeros
-        mvpConsumedFraction = new float[mvN];
-        std::fill(mvpConsumedFraction, mvpConsumedFraction + mvN, 0.); // Fill with zeros
-        mvpOneOfTheNeighboursGrowingInto = new int[mvN];
-        std::fill(mvpOneOfTheNeighboursGrowingInto, mvpOneOfTheNeighboursGrowingInto + mvN, -1); // Fill with -1
-        //  the following for analysis after simulation
-        mvpMaxGbPassed = new float[mvN];
-        std::fill(mvpMaxGbPassed, mvpMaxGbPassed + mvN, 0.); // Fill with 0
+    mvpConsumptionRate = new float[mvN];
+    std::fill(mvpConsumptionRate, mvpConsumptionRate + mvN, 0.); // Fill with zeros
+    mvpConsumedFraction = new float[mvN];
+    std::fill(mvpConsumedFraction, mvpConsumedFraction + mvN, 0.); // Fill with zeros
+    mvpOneOfTheNeighboursGrowingInto = new int[mvN];
+    std::fill(mvpOneOfTheNeighboursGrowingInto, mvpOneOfTheNeighboursGrowingInto + mvN, -1); // Fill with -1
+    //  the following for analysis after simulation
+    mvpMaxGbPassed = new float[mvN];
+    std::fill(mvpMaxGbPassed, mvpMaxGbPassed + mvN, 0.); // Fill with 0
 }
 
-
-void StateVars::InitBoundaryCells(){
+/** @brief Initializes pointer containing information on whether a cell lies on the outer edges (or faces for 3D) of the RVE
+ */
+void StateVars::InitBoundaryCells()
+{
     /*Init boundary cells*/
     unsigned char btype;
     int mindex = 0;
@@ -361,47 +373,39 @@ void StateVars::InitBoundaryCells(){
     }
 }
 
-
-
-
-
- void StateVars::InitEBSDRelatedStuff()
- {
-   if (mvpKAM == nullptr)
-     mvpKAM = new float[mvN];
+/** @brief Initializes pointers with state variables which are necessary when reading the starting microstructure file and especially if it comes from EBSD
+ */
+void StateVars::InitEBSDRelatedStuff()
+{
+    if (mvpKAM == nullptr)
+        mvpKAM = new float[mvN];
     if (mvpCI == nullptr)
-     mvpCI = new float[mvN];
-     if (mvpRX == nullptr){
-     mvpRX = new int[mvN];
-     }
+        mvpCI = new float[mvN];
+    if (mvpRX == nullptr)
+    {
+        mvpRX = new int[mvN];
+    }
     if (mvpRho == nullptr)
-     mvpRho = new float[mvN];   
-        std::memset(mvpRho, 1.e12, mvN); 
-         if (mvpHasNeighNonInd == nullptr)
-     mvpHasNeighNonInd = new int[mvN];    
- }
+        mvpRho = new float[mvN];
+    std::memset(mvpRho, 1.e12, mvN);
+    if (mvpHasNeighNonInd == nullptr)
+        mvpHasNeighNonInd = new int[mvN];
+}
 
-
-  
-
-
-/** @brief Initialises measurement-related quantities when microstructure comes from EBSD 
+/** @brief Initialises measurement-related quantities when microstructure comes from EBSD
  * *
  * @param index the index of cell for which the state variables will be set
  * @param CI the confidence index of the measured pixel
  * @param RX state variable regarding the state of the pixel (normally non-recrystallized for deformed inputs) - unless we read partially recrystallized state or state after previous simulation
- * @param kam the dislocation density measured / calculated / simulated from other software
+ * @param rho the dislocation density measured / calculated / simulated from other software
 
  */
- void StateVars::SetEBSDRelatedStuffForRexAndGG(int index,float CI, int RX, float rho) 
- {
- mvpCI[index] = CI; 
-    mvpRX[index] = RX; 
+void StateVars::SetEBSDRelatedStuffForRexAndGG(int index, float CI, int RX, float rho)
+{
+    mvpCI[index] = CI;
+    mvpRX[index] = RX;
     mvpRho[index] = rho;
 }
-
-
-
 
 /** @brief Allocates memory for carbon concentration of all cells based
  *
@@ -410,40 +414,49 @@ void StateVars::InitBoundaryCells(){
  * @param *mvpXC Pointer to Eigen vector to store carbon concentration information
  * @param *mvpXC Trapped Pointer to Eigen vector to store carbon concentration trapped
  * @param *mvpXCEqAtInterphase (USE ONLY IF THERE IS ANY PROBLEM ENCOUNTERED WITH DIFFUSION EQUATION - otherwise local equilibrium partitioning takes place later) Pointer to Eigen vector to store carbon concentration equilibrium for phase partitioning at interphase cells
- * @param *mvpXCTrappedEqWithNbr (USE ONLY IF THERE IS ANY PROBLEM ENCOUNTERED WITH DIFFUSION EQUATION - otherwise local equilibrium trapping/free takes place later) Trapped Pointer to Eigen vector to store carbon concentration trapped equilibrium 
+ * @param *mvpXCTrappedEqWithNbr (USE ONLY IF THERE IS ANY PROBLEM ENCOUNTERED WITH DIFFUSION EQUATION - otherwise local equilibrium trapping/free takes place later) Trapped Pointer to Eigen vector to store carbon concentration trapped equilibrium
  */
 void StateVars::allocateCarbonVectors(bool initXCEqInt, bool initXCEqDef)
 {
     /*First check if already allocated */
     if (mvpXC && mvpXCTrapped)
         return;
-    if (!mvpXC){
+    if (!mvpXC)
+    {
         mvpXC = new Eigen::VectorXd(mvN);
         mvpXC->setZero(mvN);
     }
-    if (!mvpXCTrapped){
+    if (!mvpXCTrapped)
+    {
         mvpXCTrapped = new Eigen::VectorXd(mvN);
         mvpXCTrapped->setZero(mvN);
     }
-    if (initXCEqInt){
+    if (initXCEqInt)
+    {
         mvpXCEqAtInterphase = new Eigen::VectorXd(mvN);
         mvpXCEqAtInterphase->setZero(mvN);
-        LOG_F(WARNING," It is not advisable to do partitioning outside the diffusion solver, as this can cause (minor) mesh dependencies. Anyway i initialize the relevant variables, but make sure this is what you want. If not change the input file parameter IsPartitioningHappeningInDiffusionStep into 1");
+        LOG_F(WARNING, " It is not advisable to do partitioning outside the diffusion solver, as this can cause (minor) mesh dependencies. Anyway i initialize the relevant variables, but make sure this is what you want. If not change the input file parameter IsPartitioningHappeningInDiffusionStep into 1");
     }
-    if (initXCEqDef){
+    if (initXCEqDef)
+    {
         mvpXCTrappedEqWithNbr = new Eigen::VectorXd(mvN);
         mvpXCTrappedEqWithNbr->setZero(mvN);
-        LOG_F(WARNING," It is not advisable to do trapping to defects equilibrium outside the diffusion solver, as this can cause (minor) mesh dependencies. Anyway i initialize the relevant variables, but make sure this is what you want. If not change the input file parameter IsSoluteSegregationHappeningInDiffusionStep into 1");
+        LOG_F(WARNING, " It is not advisable to do trapping to defects equilibrium outside the diffusion solver, as this can cause (minor) mesh dependencies. Anyway i initialize the relevant variables, but make sure this is what you want. If not change the input file parameter IsSoluteSegregationHappeningInDiffusionStep into 1");
     }
 }
 
+/** @brief Initializes pointers with state variables which are necessary for solute redistrubution (i.e. diffusivities per pair of cells,  and trapping to defects per cell).
+ */
+
 void StateVars::InitializeSoluteRedistributionAndDefectsVariables()
 {
-        mvpKappaFactorForCTrappedDefects = new double[mvN]; // although it only matters for Csegregation to defects, the way the code is writtem now whole Cdiffusion step is solved 
-        mvpDiffusivityC_Ratio =  new double[mvN * mvNNearest]; // although it only matters for having different diffusivities (e.g. Agren, or solving martensite-austenite), the way the Ax=b code is written now  needs the Diff matrix (i.e. it is part of A matrix, and takes values of 1 if all diffusivitties are equal (i.e. equal to the maxdiffusivity))
-        std::memset(mvpKappaFactorForCTrappedDefects, 0., mvN);
-        std::memset(mvpDiffusivityC_Ratio, 1., mvN * mvNNearest);
+    mvpKappaFactorForCTrappedDefects = new double[mvN];   // although it only matters for Csegregation to defects, the way the code is writtem now whole Cdiffusion step is solved
+    mvpDiffusivityC_Ratio = new double[mvN * mvNNearest]; // although it only matters for having different diffusivities (e.g. Agren, or solving martensite-austenite), the way the Ax=b code is written now  needs the Diff matrix (i.e. it is part of A matrix, and takes values of 1 if all diffusivitties are equal (i.e. equal to the maxdiffusivity))
+    std::memset(mvpKappaFactorForCTrappedDefects, 0., mvN);
+    std::memset(mvpDiffusivityC_Ratio, 1., mvN * mvNNearest);
 }
+
+
 
 
 
@@ -816,8 +829,6 @@ void StateVars::IndexToIJK(int index, int *i, int *j, int *k) const
     *i = index % mvNx;
 }
 
-
-
 /** @brief Similar to Index2IJK, but returns i, j, k as std:array
  *
  * @param index Cell index
@@ -901,33 +912,34 @@ void StateVars::validateAllNeighbourCells(void)
 
             if (mvIs2DSimulation && indexo < 0 && !(i <= 1 || j <= 1 || i >= mvNx - 2 || j >= mvNy - 2))
             {
-            LOG_F(WARNING, "neighbour: %d of %d too low: %d; i %d j %d k %d", nbr, index, indexo, i, j, k);
+                LOG_F(WARNING, "neighbour: %d of %d too low: %d; i %d j %d k %d", nbr, index, indexo, i, j, k);
             }
 
             if (mvIs2DSimulation && indexo >= mvN && !mvpBoundaryCell[index] && !(i <= 1 || j <= 1 || i >= mvNx - 2 || j >= mvNy - 2))
             {
-            LOG_F(WARNING, "neighbour: %d of %d too low: %d; i %d j %d k %d", nbr, index, indexo, i, j, k);
+                LOG_F(WARNING, "neighbour: %d of %d too low: %d; i %d j %d k %d", nbr, index, indexo, i, j, k);
             }
 
             if (!mvIs2DSimulation && indexo < 0 && !mvpBoundaryCell[index] /**(x<=1 || y<=1 || x>=mvNx-2 || y>=mvNy-2 || z<=1 || z>=mvNz-1)*/)
             {
-            LOG_F(WARNING, "neighbour: %d of %d too high: %d max: %d; i %d j %d k %d", nbr, index, indexo, mvN, i, j, k);
+                LOG_F(WARNING, "neighbour: %d of %d too high: %d max: %d; i %d j %d k %d", nbr, index, indexo, mvN, i, j, k);
             }
 
             if (!mvIs2DSimulation && indexo >= mvN && !mvpBoundaryCell[index] /*&& !(x<=1 || y<=1 || x>=mvNx-2 || y>=mvNy-2 || z<=1 || z>=mvNz-1)*/)
             {
-            LOG_F(WARNING, "neighbour: %d of %d too high: %d max: %d; i %d j %d k %d", nbr, index, indexo, mvN, i, j, k);
+                LOG_F(WARNING, "neighbour: %d of %d too high: %d max: %d; i %d j %d k %d", nbr, index, indexo, mvN, i, j, k);
             }
         }
     }
 }
 
-/// @brief Initializes #mvpDiffusivityC_Ratio containing diffusivities per pair of neighbour cells through which solute diffuses, in matrix form 
+/// @brief Initializes #mvpDiffusivityC_Ratio containing diffusivities per pair of neighbour cells through which solute diffuses, in matrix form
 void StateVars::InitDiffusivitiesVector()
 {
     mvpDiffusivityC_Ratio = new double[mvN * mvNNearest];
     int i, j;
-    for (i = 0; i < mvN; ++i){
+    for (i = 0; i < mvN; ++i)
+    {
         for (j = 0; j < mvNNearest; ++j)
         {
             mvpDiffusivityC_Ratio[mvNNearest * i + j] = 1.; // if you dont want variability in diffusivities the values will remain 1. But still, initialize it pls even because (for now) when solving Ax=b, A is matrix considering diffusivities for each neighbour pair.
@@ -986,12 +998,9 @@ float StateVars::GetDistanceBetweenCells(int indexA, int indexB) const
     return sqrt(di * di + dj * dj + dk * dk);
 }
 
-
-
-
 /** @brief Solves one diffusion step
  *
- * @param mvpTCK pointer to ThermChemKin instance
+ * @param TCK_p pointer to ThermChemKin instance
  * @param dt predetermined time step
  * @param AllowSoluteSegregation bool on whether we have solute trapping in general during simulation
  * @param maxDiffusivityInTimeStep the maximum value of diffusivity between neighbour cells calculated in microstructure class
@@ -999,9 +1008,9 @@ float StateVars::GetDistanceBetweenCells(int indexA, int indexB) const
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-
-void StateVars::SoluteDiffusionStep(ThermChemKin *mvpTCK, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere) {
-LOG_F(INFO,"Solving solute diffusion mvAlphaDt %g, maxDiffusivityInTimeStep %g, dt %g, dx %g",mvAlphaDt,maxDiffusivityInTimeStep,dt,mvDx);
+void StateVars::SoluteDiffusionStep(ThermChemKin *TCK_p, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere)
+{
+    LOG_F(INFO, "Solving solute diffusion mvAlphaDt %g, maxDiffusivityInTimeStep %g, dt %g, dx %g", mvAlphaDt, maxDiffusivityInTimeStep, dt, mvDx);
     LOG_IF_F(INFO, IsPartitioningHappeningHere, "Including carbon partitioning in Ax = b");
     LOG_IF_F(INFO, !IsPartitioningHappeningHere, "Carbon partitioning already solved (not part of Ax = b)");
     LOG_IF_F(INFO, IsSoluteSegregationHappeningHere && AllowSoluteSegregation, "Including carbon trapping in Ax = b");
@@ -1012,45 +1021,55 @@ LOG_F(INFO,"Solving solute diffusion mvAlphaDt %g, maxDiffusivityInTimeStep %g, 
     double tolerance = 5e-5; // relative tolerance: iterative linear solver stops at iteration k when
     mvAlphaDt = dt * maxDiffusivityInTimeStep / (mvDx * mvDx);
 
-    if (AllowSoluteSegregation && !IsSoluteSegregationHappeningHere) {
+    if (AllowSoluteSegregation && !IsSoluteSegregationHappeningHere)
+    {
         *mvpXC -= *mvpXCTrapped;
     }
 
     bool IsSystemAsBSolvedWithCarbonTrapping = (AllowSoluteSegregation && IsSoluteSegregationHappeningHere);
 
-    if (mvKeepConstantIronAtomsPerCell) ConvertTotCellConcentrationsInCarbonPerIron();
+    if (mvKeepConstantIronAtomsPerCell)
+        ConvertTotCellConcentrationsInCarbonPerIron();
 
-    *mvpXC = NumericalSolverCG(*mvpXC, mvpTCK, 500, 5e-5, *mvpXC, IsPartitioningHappeningHere, IsSystemAsBSolvedWithCarbonTrapping);
-    if (mvKeepConstantIronAtomsPerCell) ConvertTotCellConcentrationsInAtFraction();
-    if (AllowSoluteSegregation) {
-        if (!IsSoluteSegregationHappeningHere) PutBackCarbonTrappedAndCalculateNewCarbonFreeCarbonTrapped();
-        else SetCarbonTrappedAndCarbonFreeForGivenXcTot();
+    *mvpXC = NumericalSolverCG(*mvpXC, TCK_p, 500, 5e-5, *mvpXC, IsPartitioningHappeningHere, IsSystemAsBSolvedWithCarbonTrapping);
+    if (mvKeepConstantIronAtomsPerCell)
+        ConvertTotCellConcentrationsInAtFraction();
+    if (AllowSoluteSegregation)
+    {
+        if (!IsSoluteSegregationHappeningHere)
+            PutBackCarbonTrappedAndCalculateNewCarbonFreeCarbonTrapped();
+        else
+            SetCarbonTrappedAndCarbonFreeForGivenXcTot();
     }
 }
 
-
-
-void StateVars::PutBackCarbonTrappedAndCalculateNewCarbonFreeCarbonTrapped() {
+void StateVars::PutBackCarbonTrappedAndCalculateNewCarbonFreeCarbonTrapped()
+{
     *mvpXC += *mvpXCTrapped;
     SetCarbonTrappedAndCarbonFreeForGivenXcTot();
 }
 
-void StateVars::SetCarbonTrappedAndCarbonFreeForGivenXcTot() {
-    for (int i = 0; i < mvN; i++) {
-        if (mvpKappaFactorForCTrappedDefects[i] > 0.) {
+void StateVars::SetCarbonTrappedAndCarbonFreeForGivenXcTot()
+{
+    for (int i = 0; i < mvN; i++)
+    {
+        if (mvpKappaFactorForCTrappedDefects[i] > 0.)
+        {
             double FactorTot = mvpKappaFactorForCTrappedDefects[i] + 1.;
             (*mvpXCTrapped)[i] = (*mvpXC)[i] * mvpKappaFactorForCTrappedDefects[i] / FactorTot;
-        } else {
+        }
+        else
+        {
             (*mvpXCTrapped)[i] = 0.;
         }
-        if ((*mvpXC)[i]<0. ||  (*mvpXCTrapped)[i] < 0. || (*mvpXC)[i]-(*mvpXCTrapped)[i]<0.)
-        LOG_F(ERROR, " wrong calculations check cell %d, has XCTot %e, XCFree %e, mvpXCTrapped %e, mvpKappaFactorForCTrappedDefects %e, mvpKappaFactorForCTrappedDefects*rho %e ", i, (*mvpXC)[i], (*mvpXC)[i] - (*mvpXCTrapped)[i], (*mvpXCTrapped)[i], mvpKappaFactorForCTrappedDefects[i], mvpKappaFactorForCTrappedDefects[i] / mvpRho[i] / 1.e12);
+        if ((*mvpXC)[i] < 0. || (*mvpXCTrapped)[i] < 0. || (*mvpXC)[i] - (*mvpXCTrapped)[i] < 0.)
+            LOG_F(ERROR, " wrong calculations check cell %d, has XCTot %e, XCFree %e, mvpXCTrapped %e, mvpKappaFactorForCTrappedDefects %e, mvpKappaFactorForCTrappedDefects*rho %e ", i, (*mvpXC)[i], (*mvpXC)[i] - (*mvpXCTrapped)[i], (*mvpXCTrapped)[i], mvpKappaFactorForCTrappedDefects[i], mvpKappaFactorForCTrappedDefects[i] / mvpRho[i] / 1.e12);
     }
 }
 
 /** @brief Numerical solution of diffusion step based on conjugate gradient method
  * @param b the b=Ax (which is equal to current concentratons initially)
- * @param mvpTCK pointer to ThermChemKin instance
+ * @param TCK_p pointer to ThermChemKin instance
  * @param maxit maximum allowed iterations
  * @param tolerance tolerance for convergence
  * @param initial_guess the first x values guessed (set here as current solute concentrations)
@@ -1058,8 +1077,8 @@ void StateVars::SetCarbonTrappedAndCarbonFreeForGivenXcTot() {
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-
-Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *mvpTCK, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere) {
+Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *TCK_p, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere)
+{
     Eigen::VectorXd x = initial_guess;
     Eigen::VectorXd r(b.size());
     Eigen::VectorXd p(b.size());
@@ -1067,28 +1086,30 @@ Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChem
     double rsold, alpha, rsnew, p_dotAp;
 
     // Compute the initial residual r = b - A*x for the initial guess
-    SystemATimesX(x, mvpTCK, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere);
-    r = b - Ap;  // Initial residual
+    SystemATimesX(x, TCK_p, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere);
+    r = b - Ap; // Initial residual
     p = r;
     rsold = r.dot(r);
 
-    if (rsold < tolerance * tolerance) {
+    if (rsold < tolerance * tolerance)
+    {
         LOG_F(INFO, "Initial guess is already good enough.");
         return x;
     }
 
-    for (int i = 0; i < maxit; ++i) {
+    for (int i = 0; i < maxit; ++i)
+    {
 
-
-        SystemATimesX(p, mvpTCK, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere);
+        SystemATimesX(p, TCK_p, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere);
         alpha = rsold / p_dotAp;
         x += alpha * p;
         r -= alpha * Ap;
         rsnew = r.dot(r);
-        
+
         // LOG_F(INFO, "Iteration %d: residual = %e", i, sqrt(rsnew));
 
-        if (sqrt(rsnew) < tolerance) {
+        if (sqrt(rsnew) < tolerance)
+        {
             // LOG_F(INFO, "Converged after %d iterations.", i);
             break;
         }
@@ -1100,49 +1121,53 @@ Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChem
     return x;
 }
 
-
-
 /** @brief Performs one computation of the system Ax=b for Traka's diffusion / partitioning / trapping to defects
  * Traka, 2024, Acta Materialia.
- * 
+ *
  * @param x the solute concentrations vector which remains here as such
- * @param mvpTCK pointer to ThermChemKin instance
+ * @param TCK_p pointer to ThermChemKin instance
  * @param b the solute concentrations vector which here changes according to the reduction of Ax
  * @param p_dotAp dot product of new b
  * @param IsPartitioningHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-
-void StateVars::SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *mvpTCK, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere) {
+void StateVars::SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *TCK_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere)
+{
     int lall[mvNAll];
     double XcAlphaEq, XcGammaEq;
-// LOG_F(INFO," mvAlphaDt %g",mvAlphaDt);
-    for (int i = 0; i < mvN; i++) {
+    // LOG_F(INFO," mvAlphaDt %g",mvAlphaDt);
+    for (int i = 0; i < mvN; i++)
+    {
         int j;
         float NbrCounter;
         double RatioXcFreeToXcTotForIndex = 1.;
-        if (IsSoluteSegregationHappeningHere) RatioXcFreeToXcTotForIndex /= (1. + mvpKappaFactorForCTrappedDefects[i]);
+        if (IsSoluteSegregationHappeningHere)
+            RatioXcFreeToXcTotForIndex /= (1. + mvpKappaFactorForCTrappedDefects[i]);
 
         b[i] = 0.0;
         GetNeighbourCellOffsets(i, lall);
         NbrCounter = 0;
-        for (int nbr = 0; nbr < mvNNearest; ++nbr) {
+        for (int nbr = 0; nbr < mvNNearest; ++nbr)
+        {
             j = lall[nbr];
             double RatioXcFreeToXcTotForNbr = 1.;
-            if (IsSoluteSegregationHappeningHere) RatioXcFreeToXcTotForNbr /= (1. + mvpKappaFactorForCTrappedDefects[j]);
+            if (IsSoluteSegregationHappeningHere)
+                RatioXcFreeToXcTotForNbr /= (1. + mvpKappaFactorForCTrappedDefects[j]);
 
-            if (mvpLatticeId[j] != mvpLatticeId[i]) {
-                if (!IsPartitioningHappeningHere) continue;
+            if (mvpLatticeId[j] != mvpLatticeId[i])
+            {
+                if (!IsPartitioningHappeningHere)
+                    continue;
                 double XcFCC = (IsCellFCC(i)) ? RatioXcFreeToXcTotForIndex * x[i] : RatioXcFreeToXcTotForNbr * x[j];
                 double XcBCC = (IsCellFCC(i)) ? RatioXcFreeToXcTotForNbr * x[j] : RatioXcFreeToXcTotForIndex * x[i];
                 double XcTot = 0.5 * (XcBCC + XcFCC);
-                XcGammaEq = mvpTCK->GetEqXcFCCAtThisInterface(XcBCC, XcFCC);
+                XcGammaEq = TCK_p->GetEqXcFCCAtThisInterface(XcBCC, XcFCC);
                 XcAlphaEq = 2. * XcTot - XcGammaEq;
                 double XcPartitionedAtBoundary = (IsCellFCC(i)) ? XcGammaEq : XcAlphaEq;
-                if (!IsTheNumberFinite(XcGammaEq) || !IsTheNumberFinite(XcAlphaEq) )
-                ABORT_F(" XcGammaEq %g and XcAlphaEq %g",XcGammaEq,XcAlphaEq);
-//LOG_F(INFO," partitioning solution FCC %g and BCC %g xcPart %g", XcGammaEq,XcAlphaEq, XcPartitionedAtBoundary);
+                if (!IsTheNumberFinite(XcGammaEq) || !IsTheNumberFinite(XcAlphaEq))
+                    ABORT_F(" XcGammaEq %g and XcAlphaEq %g", XcGammaEq, XcAlphaEq);
+                // LOG_F(INFO," partitioning solution FCC %g and BCC %g xcPart %g", XcGammaEq,XcAlphaEq, XcPartitionedAtBoundary);
 
                 b[i] -= (mvpDiffusivityC_Ratio[mvNNearest * i + nbr] * XcPartitionedAtBoundary);
                 NbrCounter += mvpDiffusivityC_Ratio[mvNNearest * i + nbr];
@@ -1153,12 +1178,11 @@ void StateVars::SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *mvpTCK, Ei
         }
         b[i] *= mvAlphaDt;
         b[i] += (NbrCounter * mvAlphaDt * RatioXcFreeToXcTotForIndex + 1) * x[i];
-                        if (!IsTheNumberFinite(b[i])  )
-                ABORT_F(" b[i] %g ",b[i]);
+        if (!IsTheNumberFinite(b[i]))
+            ABORT_F(" b[i] %g ", b[i]);
     }
     p_dotAp = b.dot(x);
 }
-
 
 bool StateVars::IsTheNumberFinite(double numberToCheck)
 {
@@ -1166,5 +1190,3 @@ bool StateVars::IsTheNumberFinite(double numberToCheck)
         return false;
     return true;
 }
-
-

@@ -1,0 +1,642 @@
+\hypertarget{classThermChemKin}{}\doxysection{Therm\+Chem\+Kin Class Reference}
+\label{classThermChemKin}\index{ThermChemKin@{ThermChemKin}}
+
+
+Manages all the physical quantities that affect thermodynamics and kinetics on the microstructure simulation. Stores all thermodynamic, chemical, kinetic properties in relation to lattice, temperature, solute concentration, defect density, etc.. These affect all simulated processes recrystallization, grain growth), solute redistribution (partitioning, diffusion, trapping to defects), phase transformations.  
+
+
+
+
+{\ttfamily \#include $<$Thermo\+Chem\+Kinetics.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classThermChemKin_ab89e913cdb1aaa1b8ab72330c89ae7f3}{Therm\+Chem\+Kin}} (double user\+XCo, double user\+Start\+Temperature, double user\+GB\+\_\+\+Mo, double user\+GB\+\_\+\+Qg, double user\+GB\+\_\+E, double user\+PB\+\_\+\+Mo, double user\+PB\+\_\+\+Qg, double user\+PB\+\_\+E, double user\+\_\+\+Diff\+Pre\+Factor, double user\+\_\+\+Diff\+Qg)
+\begin{DoxyCompactList}\small\item\em Constructor for \mbox{\hyperlink{classThermChemKin}{Therm\+Chem\+Kin}} class. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classThermChemKin_a560c3e6c65955083f86f764eee48eb6f}\label{classThermChemKin_a560c3e6c65955083f86f764eee48eb6f}} 
+\mbox{\hyperlink{classThermChemKin_a560c3e6c65955083f86f764eee48eb6f}{$\sim$\+Therm\+Chem\+Kin}} ()
+\begin{DoxyCompactList}\small\item\em Destructor. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classThermChemKin_a7e077feeedcc86054891d7cc9706f925}{Set\+Temperature\+For\+This\+Step}} (double temp)
+\begin{DoxyCompactList}\small\item\em Sets the temperature for the current simulation step. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_ad7c413b0c932bfa09c3ce9edc95da244}{Get\+Temperature\+For\+This\+Step}} () const
+\begin{DoxyCompactList}\small\item\em Gets the temperature for the current simulation step. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_ac9ec3eb3f98beacd136553faacf6adae}{Get\+Grain\+Boundary\+Mobility}} () const
+\begin{DoxyCompactList}\small\item\em Calculates the grain boundary mobility. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a63eddd25f08adf361b2d70694f19b66c}{Get\+Phase\+Boundary\+Mobility}} () const
+\begin{DoxyCompactList}\small\item\em Calculates the phase boundary mobility. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a8b265321986bbdcfc5575aab1114e3c4}{Get\+Grain\+Boundary\+Energy}} () const
+\begin{DoxyCompactList}\small\item\em Gets the grain boundary energy density. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_ae3ed93e4956fa899cdc9ff3808493e38}{Get\+Phase\+Boundary\+Energy}} () const
+\begin{DoxyCompactList}\small\item\em Gets the phase boundary energy density. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\begin{Indent}\textbf{ Helper Functions}\par
+\begin{DoxyCompactItemize}
+\item 
+double \mbox{\hyperlink{classThermChemKin_a0b248c02ea1f74534402ef44766ed46d}{Carbon\+Wt\+Percent\+To\+At\+Fraction}} (const double Xc\+In\+Wt)
+\begin{DoxyCompactList}\small\item\em Converts carbon weight percent to atomic fraction. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_af80946ff7ea384e287ba907c6ced6b13}{Carbon\+At\+Fraction\+To\+Wt\+Percent}} (const double Xc\+In\+At\+Fraction)
+\begin{DoxyCompactList}\small\item\em Converts carbon atomic fraction to weight percent. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classThermChemKin_ae9687d6bdf17e0184231c1e60877b3a5}{Calculate\+Xc\+Eq\+Next\+To\+Interphase}} (const double T, double Initial\+Xc\+Alpha\+In\+At, double Initial\+Xc\+Gamma\+In\+At, double $\ast$Xc\+Alpha\+Eq, double $\ast$Xc\+Gamma\+Eq)
+\begin{DoxyCompactList}\small\item\em Calculates the equilibrium carbon concentration next to the interphase. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_aa83e671365e3bece9e191e070c339ef1}{Get\+CDiffusivity\+Agren}} (const double xC) const
+\begin{DoxyCompactList}\small\item\em Gets the carbon diffusivity based on temperature using the Agren model. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_ad0a450b7c524e46765bda1f1ecfcd30c}{Get\+CDiffusivity\+Martensite}} () const
+\begin{DoxyCompactList}\small\item\em Gets the carbon diffusivity for martensite. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a874d5aeb8a8face02ed5532fe6796c65}{Get\+CDiffusivity\+Agren\+With\+Restriction\+For\+XC}} (const double xC, const double Max\+Allowed\+Xc\+To\+Affect\+Diffusivity) const
+\begin{DoxyCompactList}\small\item\em Gets the carbon diffusivity with restriction for maximum allowed carbon concentration. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a649f30aa8bcbc2357af7247252669fbe}{Get\+Solute\+Diffusivity\+From\+User}} () const
+\begin{DoxyCompactList}\small\item\em Gets the solute diffusivity from user-\/defined parameters. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+\doxysubsection*{Chemical Potentials and Thermodynamic Equilibrium}
+\begin{DoxyCompactItemize}
+\item 
+void \mbox{\hyperlink{classThermChemKin_a40601e7c64436dd5ebc4cef7ba2d7fb7}{Load\+Chemical\+Potentials\+And\+Local\+Equilibrium\+XC}} (const char $\ast$Thermofilename, bool Keep\+Constant\+Iron\+Atoms\+Per\+Cell)
+\begin{DoxyCompactList}\small\item\em Loads chemical potentials and local equilibrium data from a file. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classThermChemKin_a67b601db6aedb05aab78265af8d305aa}{Make\+Tables\+YFor\+XCEq\+VSCarbon\+Interface}} (const double $\ast$XCLocal\+Eq\+FCC\+\_\+\+As\+Read, const double $\ast$XCLocal\+Eq\+BCC\+\_\+\+As\+Read)
+\begin{DoxyCompactList}\small\item\em Creates tables for Y vs. equilibrium carbon concentration at the interface. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classThermChemKin_abfad297ff75c0a2ba26acebdc8b8efc7}{Make\+Tables\+YFor\+Gibbs\+VSCarbon}} (const double $\ast$Gibbs\+FCC\+\_\+\+As\+Read, const double $\ast$Gibbs\+BCC\+\_\+\+As\+Read, const double $\ast$Mu\+Substitutional\+FCC\+\_\+\+As\+Read, const double $\ast$Mu\+Substitutional\+BCC\+\_\+\+As\+Read)
+\begin{DoxyCompactList}\small\item\em Creates tables for Gibbs energy vs. carbon concentration. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classThermChemKin_aea5041e8375f8b672ae4521a6bc417e8}{Get\+Eq\+Mu\+Carbon\+Related\+Parameters\+ABCD}} (double $\ast$A, double $\ast$B, double $\ast$C, double $\ast$D)
+\begin{DoxyCompactList}\small\item\em Gets the parameters A, B, C, D for equilibrium carbon concentration. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a577854c3d6834c5b49fd6d7b73a08f1c}{Get\+Mu\+Substitutional\+In\+BCC}} (const double xC) const
+\begin{DoxyCompactList}\small\item\em Gets the substitutional chemical potential in BCC. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a89232eca3b229210f6452259b5c3c45b}{Get\+Mu\+Substitutional\+In\+FCC}} (const double xC) const
+\begin{DoxyCompactList}\small\item\em Gets the substitutional chemical potential in FCC. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a910f016082f2d9039b77b014cf3e6f5e}{Get\+Eq\+Xc\+FCCAt\+This\+Interface}} (const double x\+CBCCNow, const double x\+CFCCNow) const
+\begin{DoxyCompactList}\small\item\em Gets the equilibrium carbon concentration in FCC at the interface. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a08dee3bffdf3f168226e21ba2abe349b}{Get\+Value\+Local\+Eq\+XC\+\_\+\+Clamped}} (const double X, const double $\ast$Y) const
+\begin{DoxyCompactList}\small\item\em Gets the local equilibrium carbon concentration, clamped to table limits. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a621fa59ab5904cb4191a1616cdf2dd6c}{Get\+Value\+Gibbs\+\_\+\+Clamped}} (const double X, const double $\ast$Y) const
+\begin{DoxyCompactList}\small\item\em Gets the Gibbs energy, clamped to table limits. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_a8edfa486affdb8f93ebfd7a550b5c0d1}{Ferrite\+Molar\+Volume}} () const
+\begin{DoxyCompactList}\small\item\em Returns the molar volume for iron BCC. \end{DoxyCompactList}\item 
+double \mbox{\hyperlink{classThermChemKin_aa04a7c8e2478a19cfafd784ef93f788c}{Austenite\+Molar\+Volume}} () const
+\begin{DoxyCompactList}\small\item\em Returns the molar volume for iron FCC. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages all the physical quantities that affect thermodynamics and kinetics on the microstructure simulation. Stores all thermodynamic, chemical, kinetic properties in relation to lattice, temperature, solute concentration, defect density, etc.. These affect all simulated processes recrystallization, grain growth), solute redistribution (partitioning, diffusion, trapping to defects), phase transformations. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classThermChemKin_ab89e913cdb1aaa1b8ab72330c89ae7f3}\label{classThermChemKin_ab89e913cdb1aaa1b8ab72330c89ae7f3}} 
+\index{ThermChemKin@{ThermChemKin}!ThermChemKin@{ThermChemKin}}
+\index{ThermChemKin@{ThermChemKin}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{ThermChemKin()}{ThermChemKin()}}
+{\footnotesize\ttfamily Therm\+Chem\+Kin\+::\+Therm\+Chem\+Kin (\begin{DoxyParamCaption}\item[{double}]{user\+XCo,  }\item[{double}]{user\+Start\+Temperature,  }\item[{double}]{user\+GB\+\_\+\+Mo,  }\item[{double}]{user\+GB\+\_\+\+Qg,  }\item[{double}]{user\+GB\+\_\+E,  }\item[{double}]{user\+PB\+\_\+\+Mo,  }\item[{double}]{user\+PB\+\_\+\+Qg,  }\item[{double}]{user\+PB\+\_\+E,  }\item[{double}]{user\+\_\+\+Diff\+Pre\+Factor,  }\item[{double}]{user\+\_\+\+Diff\+Qg }\end{DoxyParamCaption})}
+
+
+
+Constructor for \mbox{\hyperlink{classThermChemKin}{Therm\+Chem\+Kin}} class. 
+
+Initializes the \mbox{\hyperlink{classThermChemKin}{Therm\+Chem\+Kin}} object with user-\/defined parameters.
+
+
+\begin{DoxyParams}{Parameters}
+{\em user\+XCo} & Initial carbon concentration (atomic fraction). \\
+\hline
+{\em user\+Start\+Temperature} & Initial temperature (K). \\
+\hline
+{\em user\+GB\+\_\+\+Mo} & Pre-\/exponential factor for grain boundary migration. \\
+\hline
+{\em user\+GB\+\_\+\+Qg} & Activation energy for grain boundary migration (J/mol). \\
+\hline
+{\em user\+GB\+\_\+E} & Grain boundary energy density (J/m$^\wedge$2). \\
+\hline
+{\em user\+PB\+\_\+\+Mo} & Pre-\/exponential factor for phase boundary migration. \\
+\hline
+{\em user\+PB\+\_\+\+Qg} & Activation energy for phase boundary migration (J/mol). \\
+\hline
+{\em user\+PB\+\_\+E} & Phase boundary energy density (J/m$^\wedge$2). \\
+\hline
+{\em user\+\_\+\+Diff\+Pre\+Factor} & Pre-\/exponential factor for solute diffusion. \\
+\hline
+{\em user\+\_\+\+Diff\+Qg} & Activation energy for solute diffusion (J/mol). \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classThermChemKin_aa04a7c8e2478a19cfafd784ef93f788c}\label{classThermChemKin_aa04a7c8e2478a19cfafd784ef93f788c}} 
+\index{ThermChemKin@{ThermChemKin}!AusteniteMolarVolume@{AusteniteMolarVolume}}
+\index{AusteniteMolarVolume@{AusteniteMolarVolume}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{AusteniteMolarVolume()}{AusteniteMolarVolume()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Austenite\+Molar\+Volume (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the molar volume for iron FCC. 
+
+\begin{DoxyReturn}{Returns}
+Molar volume for iron FCC (m$^\wedge$3/mol). 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_ae9687d6bdf17e0184231c1e60877b3a5}\label{classThermChemKin_ae9687d6bdf17e0184231c1e60877b3a5}} 
+\index{ThermChemKin@{ThermChemKin}!CalculateXcEqNextToInterphase@{CalculateXcEqNextToInterphase}}
+\index{CalculateXcEqNextToInterphase@{CalculateXcEqNextToInterphase}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{CalculateXcEqNextToInterphase()}{CalculateXcEqNextToInterphase()}}
+{\footnotesize\ttfamily void Therm\+Chem\+Kin\+::\+Calculate\+Xc\+Eq\+Next\+To\+Interphase (\begin{DoxyParamCaption}\item[{const double}]{T,  }\item[{double}]{Initial\+Xc\+Alpha\+In\+At,  }\item[{double}]{Initial\+Xc\+Gamma\+In\+At,  }\item[{double $\ast$}]{Xc\+Alpha\+Eq,  }\item[{double $\ast$}]{Xc\+Gamma\+Eq }\end{DoxyParamCaption})}
+
+
+
+Calculates the equilibrium carbon concentration next to the interphase. 
+
+The purpose of this function is to partition the solute ONLY IN CASE the chemical potentials are known /$\ast$$\ast$ Calculates local equilibrium (partitioning) carbon concentrations based on analytical function for iron-\/carbon that is solved numerically.
+
+
+\begin{DoxyParams}{Parameters}
+{\em T} & Temperature (K). \\
+\hline
+{\em Initial\+Xc\+Alpha\+In\+At} & Initial carbon concentration in alpha phase (atomic fraction). \\
+\hline
+{\em Initial\+Xc\+Gamma\+In\+At} & Initial carbon concentration in gamma phase (atomic fraction). \\
+\hline
+{\em Xc\+Alpha\+Eq} & Pointer to store equilibrium carbon concentration in alpha phase. \\
+\hline
+{\em Xc\+Gamma\+Eq} & Pointer to store equilibrium carbon concentration in gamma phase.\\
+\hline
+\end{DoxyParams}
+
+\begin{DoxyItemize}
+\item 
+\begin{DoxyParams}{Parameters}
+{\em T} & the current temperature \\
+\hline
+{\em Initial\+Xc\+Alpha\+In\+At} & the current carbon concentration in BCC next to interphase \\
+\hline
+{\em Initial\+Xc\+Gamma\+In\+At} & the current carbon concentration in FCC next to interphase \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Xc\+Alpha\+Eq the partitioned (and local equilibrium) carbon concentration in BCC next to interphase
+\end{DoxyReturn}
+
+\item \begin{DoxyReturn}{Returns}
+Xc\+Gamma\+Eq the partitioned (and local equilibrium) carbon concentration in FCC next to interphase
+\end{DoxyReturn}
+
+\item TODO\+: read the lattice data 
+\end{DoxyItemize}\mbox{\Hypertarget{classThermChemKin_af80946ff7ea384e287ba907c6ced6b13}\label{classThermChemKin_af80946ff7ea384e287ba907c6ced6b13}} 
+\index{ThermChemKin@{ThermChemKin}!CarbonAtFractionToWtPercent@{CarbonAtFractionToWtPercent}}
+\index{CarbonAtFractionToWtPercent@{CarbonAtFractionToWtPercent}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{CarbonAtFractionToWtPercent()}{CarbonAtFractionToWtPercent()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Carbon\+At\+Fraction\+To\+Wt\+Percent (\begin{DoxyParamCaption}\item[{const double}]{Xc\+In\+At\+Fraction }\end{DoxyParamCaption})}
+
+
+
+Converts carbon atomic fraction to weight percent. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Xc\+In\+At\+Fraction} & Carbon atomic fraction. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Carbon weight percent.
+\end{DoxyReturn}
+Returns the converted at frac to wt pct for carbon -\/ iron 
+\begin{DoxyParams}{Parameters}
+{\em Xc\+In\+At\+Fraction} & concentration of carbon in at fraction
+\begin{DoxyItemize}
+\item $\ast$ TODO\+: read the lattice data 
+\end{DoxyItemize}\\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classThermChemKin_a0b248c02ea1f74534402ef44766ed46d}\label{classThermChemKin_a0b248c02ea1f74534402ef44766ed46d}} 
+\index{ThermChemKin@{ThermChemKin}!CarbonWtPercentToAtFraction@{CarbonWtPercentToAtFraction}}
+\index{CarbonWtPercentToAtFraction@{CarbonWtPercentToAtFraction}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{CarbonWtPercentToAtFraction()}{CarbonWtPercentToAtFraction()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Carbon\+Wt\+Percent\+To\+At\+Fraction (\begin{DoxyParamCaption}\item[{const double}]{Xc\+In\+Wt }\end{DoxyParamCaption})}
+
+
+
+Converts carbon weight percent to atomic fraction. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em Xc\+In\+Wt} & Carbon weight percent. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Carbon atomic fraction.
+\end{DoxyReturn}
+Returns the converted wt pct to at frac for carbon -\/ iron
+\begin{DoxyItemize}
+\item 
+\begin{DoxyParams}{Parameters}
+{\em Xc\+In\+Wt} & concentration of carbon in wt pct\\
+\hline
+\end{DoxyParams}
+
+\item TODO\+: read the lattice data 
+\end{DoxyItemize}\mbox{\Hypertarget{classThermChemKin_a8edfa486affdb8f93ebfd7a550b5c0d1}\label{classThermChemKin_a8edfa486affdb8f93ebfd7a550b5c0d1}} 
+\index{ThermChemKin@{ThermChemKin}!FerriteMolarVolume@{FerriteMolarVolume}}
+\index{FerriteMolarVolume@{FerriteMolarVolume}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{FerriteMolarVolume()}{FerriteMolarVolume()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Ferrite\+Molar\+Volume (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the molar volume for iron BCC. 
+
+\begin{DoxyReturn}{Returns}
+Molar volume for iron BCC (m$^\wedge$3/mol). 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_aa83e671365e3bece9e191e070c339ef1}\label{classThermChemKin_aa83e671365e3bece9e191e070c339ef1}} 
+\index{ThermChemKin@{ThermChemKin}!GetCDiffusivityAgren@{GetCDiffusivityAgren}}
+\index{GetCDiffusivityAgren@{GetCDiffusivityAgren}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetCDiffusivityAgren()}{GetCDiffusivityAgren()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+CDiffusivity\+Agren (\begin{DoxyParamCaption}\item[{const double}]{xC }\end{DoxyParamCaption}) const}
+
+
+
+Gets the carbon diffusivity based on temperature using the Agren model. 
+
+Gets Ågren\textquotesingle{}s composition dependent austenite carbon diffusivity at temperature \#m\+VT (J. Ågren, Scr. Metall. 20 (1986) 1507–1510)
+
+
+\begin{DoxyParams}{Parameters}
+{\em xC} & Carbon atomic fraction. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Carbon diffusivity.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em Carbon} & concentration in at. fraction\\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Diffusivity in $m^2 s^{-1}$ 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_a874d5aeb8a8face02ed5532fe6796c65}\label{classThermChemKin_a874d5aeb8a8face02ed5532fe6796c65}} 
+\index{ThermChemKin@{ThermChemKin}!GetCDiffusivityAgrenWithRestrictionForXC@{GetCDiffusivityAgrenWithRestrictionForXC}}
+\index{GetCDiffusivityAgrenWithRestrictionForXC@{GetCDiffusivityAgrenWithRestrictionForXC}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetCDiffusivityAgrenWithRestrictionForXC()}{GetCDiffusivityAgrenWithRestrictionForXC()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+CDiffusivity\+Agren\+With\+Restriction\+For\+XC (\begin{DoxyParamCaption}\item[{const double}]{xC,  }\item[{const double}]{Max\+Allowed\+Xc\+To\+Affect\+Diffusivity }\end{DoxyParamCaption}) const}
+
+
+
+Gets the carbon diffusivity with restriction for maximum allowed carbon concentration. 
+
+This function is useful if there are tiny FCC grains that will enrich so much that diffusivity becomes very high and time steps reqired for diffusion are then very small. Gets carbon diffusivity using Agren\textquotesingle{}s expression (for temperature mvT) but with a max allowed value.
+
+
+\begin{DoxyParams}{Parameters}
+{\em xC} & Carbon atomic fraction. \\
+\hline
+{\em Max\+Allowed\+Xc\+To\+Affect\+Diffusivity} & Maximum allowed carbon atomic fraction to affect diffusivity. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Carbon diffusivity.
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em xC} & the local carbon concentration \\
+\hline
+{\em Max\+Allowed\+Xc\+To\+Affect\+Diffusivity} & the max allowed value \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Diffusivity in $m^2 s^{-1}$ 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_ad0a450b7c524e46765bda1f1ecfcd30c}\label{classThermChemKin_ad0a450b7c524e46765bda1f1ecfcd30c}} 
+\index{ThermChemKin@{ThermChemKin}!GetCDiffusivityMartensite@{GetCDiffusivityMartensite}}
+\index{GetCDiffusivityMartensite@{GetCDiffusivityMartensite}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetCDiffusivityMartensite()}{GetCDiffusivityMartensite()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+CDiffusivity\+Martensite (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+Gets the carbon diffusivity for martensite. 
+
+Gets Ågren\textquotesingle{}s martensite austenite carbon diffusivity at temperature \#m\+VT (J. Ågren, Journal of Physics and Chemistry of Solids (1982)) $\ast$.
+
+\begin{DoxyReturn}{Returns}
+Carbon diffusivity.
+
+Diffusivity in $m^2 s^{-1}$ 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_aea5041e8375f8b672ae4521a6bc417e8}\label{classThermChemKin_aea5041e8375f8b672ae4521a6bc417e8}} 
+\index{ThermChemKin@{ThermChemKin}!GetEqMuCarbonRelatedParametersABCD@{GetEqMuCarbonRelatedParametersABCD}}
+\index{GetEqMuCarbonRelatedParametersABCD@{GetEqMuCarbonRelatedParametersABCD}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetEqMuCarbonRelatedParametersABCD()}{GetEqMuCarbonRelatedParametersABCD()}}
+{\footnotesize\ttfamily void Therm\+Chem\+Kin\+::\+Get\+Eq\+Mu\+Carbon\+Related\+Parameters\+ABCD (\begin{DoxyParamCaption}\item[{double $\ast$}]{A,  }\item[{double $\ast$}]{B,  }\item[{double $\ast$}]{C,  }\item[{double $\ast$}]{D }\end{DoxyParamCaption})}
+
+
+
+Gets the parameters A, B, C, D for equilibrium carbon concentration. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em A} & Pointer to store parameter A. \\
+\hline
+{\em B} & Pointer to store parameter B. \\
+\hline
+{\em C} & Pointer to store parameter C. \\
+\hline
+{\em D} & Pointer to store parameter D. \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classThermChemKin_a910f016082f2d9039b77b014cf3e6f5e}\label{classThermChemKin_a910f016082f2d9039b77b014cf3e6f5e}} 
+\index{ThermChemKin@{ThermChemKin}!GetEqXcFCCAtThisInterface@{GetEqXcFCCAtThisInterface}}
+\index{GetEqXcFCCAtThisInterface@{GetEqXcFCCAtThisInterface}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetEqXcFCCAtThisInterface()}{GetEqXcFCCAtThisInterface()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Eq\+Xc\+FCCAt\+This\+Interface (\begin{DoxyParamCaption}\item[{const double}]{x\+CBCCNow,  }\item[{const double}]{x\+CFCCNow }\end{DoxyParamCaption}) const}
+
+
+
+Gets the equilibrium carbon concentration in FCC at the interface. 
+
+Returns the linearly interpolated value equilibrium (local partitioning) carbon concentration in FCC given the total interphase carbon concentration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em x\+CBCCNow} & Carbon concentration in BCC (atomic fraction). \\
+\hline
+{\em x\+CFCCNow} & Carbon concentration in FCC (atomic fraction). \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Equilibrium carbon concentration in FCC (atomic fraction).
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em x\+CBCCNow} & the current (before further partitioning) carbon concentration in adjacent BCC \\
+\hline
+{\em x\+CFCCNow} & the current (before further partitioning) carbon concentration in adjacent FCC \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+x\+CFCC linearly interpolated value equilibrium (local partitioning) carbon concentration in FCC 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_a8b265321986bbdcfc5575aab1114e3c4}\label{classThermChemKin_a8b265321986bbdcfc5575aab1114e3c4}} 
+\index{ThermChemKin@{ThermChemKin}!GetGrainBoundaryEnergy@{GetGrainBoundaryEnergy}}
+\index{GetGrainBoundaryEnergy@{GetGrainBoundaryEnergy}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetGrainBoundaryEnergy()}{GetGrainBoundaryEnergy()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Grain\+Boundary\+Energy (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets the grain boundary energy density. 
+
+\begin{DoxyReturn}{Returns}
+Grain boundary energy density (J/m$^\wedge$2). 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_ac9ec3eb3f98beacd136553faacf6adae}\label{classThermChemKin_ac9ec3eb3f98beacd136553faacf6adae}} 
+\index{ThermChemKin@{ThermChemKin}!GetGrainBoundaryMobility@{GetGrainBoundaryMobility}}
+\index{GetGrainBoundaryMobility@{GetGrainBoundaryMobility}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetGrainBoundaryMobility()}{GetGrainBoundaryMobility()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Grain\+Boundary\+Mobility (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Calculates the grain boundary mobility. 
+
+\begin{DoxyReturn}{Returns}
+Grain boundary mobility. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_a577854c3d6834c5b49fd6d7b73a08f1c}\label{classThermChemKin_a577854c3d6834c5b49fd6d7b73a08f1c}} 
+\index{ThermChemKin@{ThermChemKin}!GetMuSubstitutionalInBCC@{GetMuSubstitutionalInBCC}}
+\index{GetMuSubstitutionalInBCC@{GetMuSubstitutionalInBCC}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetMuSubstitutionalInBCC()}{GetMuSubstitutionalInBCC()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Mu\+Substitutional\+In\+BCC (\begin{DoxyParamCaption}\item[{const double}]{xC }\end{DoxyParamCaption}) const}
+
+
+
+Gets the substitutional chemical potential in BCC. 
+
+Returns the linearly interpolated value of chemical potential of substitutional atoms in BCC given the carbon concentration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em xC} & Carbon atomic fraction. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Substitutional chemical potential (J/mol).
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em xC} & the carbon concentration \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classThermChemKin_a89232eca3b229210f6452259b5c3c45b}\label{classThermChemKin_a89232eca3b229210f6452259b5c3c45b}} 
+\index{ThermChemKin@{ThermChemKin}!GetMuSubstitutionalInFCC@{GetMuSubstitutionalInFCC}}
+\index{GetMuSubstitutionalInFCC@{GetMuSubstitutionalInFCC}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetMuSubstitutionalInFCC()}{GetMuSubstitutionalInFCC()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Mu\+Substitutional\+In\+FCC (\begin{DoxyParamCaption}\item[{const double}]{xC }\end{DoxyParamCaption}) const}
+
+
+
+Gets the substitutional chemical potential in FCC. 
+
+Returns the linearly interpolated value of chemical potential of substitutional atoms in FCC given the carbon concentration.
+
+
+\begin{DoxyParams}{Parameters}
+{\em xC} & Carbon atomic fraction. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Substitutional chemical potential (J/mol).
+\end{DoxyReturn}
+
+\begin{DoxyParams}{Parameters}
+{\em xC} & the carbon concentration \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classThermChemKin_ae3ed93e4956fa899cdc9ff3808493e38}\label{classThermChemKin_ae3ed93e4956fa899cdc9ff3808493e38}} 
+\index{ThermChemKin@{ThermChemKin}!GetPhaseBoundaryEnergy@{GetPhaseBoundaryEnergy}}
+\index{GetPhaseBoundaryEnergy@{GetPhaseBoundaryEnergy}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetPhaseBoundaryEnergy()}{GetPhaseBoundaryEnergy()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Phase\+Boundary\+Energy (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets the phase boundary energy density. 
+
+\begin{DoxyReturn}{Returns}
+Phase boundary energy density (J/m$^\wedge$2). 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_a63eddd25f08adf361b2d70694f19b66c}\label{classThermChemKin_a63eddd25f08adf361b2d70694f19b66c}} 
+\index{ThermChemKin@{ThermChemKin}!GetPhaseBoundaryMobility@{GetPhaseBoundaryMobility}}
+\index{GetPhaseBoundaryMobility@{GetPhaseBoundaryMobility}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetPhaseBoundaryMobility()}{GetPhaseBoundaryMobility()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Phase\+Boundary\+Mobility (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Calculates the phase boundary mobility. 
+
+\begin{DoxyReturn}{Returns}
+Phase boundary mobility. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_a649f30aa8bcbc2357af7247252669fbe}\label{classThermChemKin_a649f30aa8bcbc2357af7247252669fbe}} 
+\index{ThermChemKin@{ThermChemKin}!GetSoluteDiffusivityFromUser@{GetSoluteDiffusivityFromUser}}
+\index{GetSoluteDiffusivityFromUser@{GetSoluteDiffusivityFromUser}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetSoluteDiffusivityFromUser()}{GetSoluteDiffusivityFromUser()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Solute\+Diffusivity\+From\+User (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const}
+
+
+
+Gets the solute diffusivity from user-\/defined parameters. 
+
+Gets solute diffusivity using Arrhenius type equation at temperature \#mT given user defined input values.
+
+\begin{DoxyReturn}{Returns}
+Solute diffusivity.
+
+Diffusivity in $m^2 s^{-1}$ 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_ad7c413b0c932bfa09c3ce9edc95da244}\label{classThermChemKin_ad7c413b0c932bfa09c3ce9edc95da244}} 
+\index{ThermChemKin@{ThermChemKin}!GetTemperatureForThisStep@{GetTemperatureForThisStep}}
+\index{GetTemperatureForThisStep@{GetTemperatureForThisStep}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetTemperatureForThisStep()}{GetTemperatureForThisStep()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Temperature\+For\+This\+Step (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets the temperature for the current simulation step. 
+
+\begin{DoxyReturn}{Returns}
+Temperature (K). 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_a621fa59ab5904cb4191a1616cdf2dd6c}\label{classThermChemKin_a621fa59ab5904cb4191a1616cdf2dd6c}} 
+\index{ThermChemKin@{ThermChemKin}!GetValueGibbs\_Clamped@{GetValueGibbs\_Clamped}}
+\index{GetValueGibbs\_Clamped@{GetValueGibbs\_Clamped}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetValueGibbs\_Clamped()}{GetValueGibbs\_Clamped()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Value\+Gibbs\+\_\+\+Clamped (\begin{DoxyParamCaption}\item[{const double}]{X,  }\item[{const double $\ast$}]{Y }\end{DoxyParamCaption}) const}
+
+
+
+Gets the Gibbs energy, clamped to table limits. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em X} & Carbon concentration. \\
+\hline
+{\em Y} & Pointer to the data table. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Gibbs energy. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_a08dee3bffdf3f168226e21ba2abe349b}\label{classThermChemKin_a08dee3bffdf3f168226e21ba2abe349b}} 
+\index{ThermChemKin@{ThermChemKin}!GetValueLocalEqXC\_Clamped@{GetValueLocalEqXC\_Clamped}}
+\index{GetValueLocalEqXC\_Clamped@{GetValueLocalEqXC\_Clamped}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{GetValueLocalEqXC\_Clamped()}{GetValueLocalEqXC\_Clamped()}}
+{\footnotesize\ttfamily double Therm\+Chem\+Kin\+::\+Get\+Value\+Local\+Eq\+XC\+\_\+\+Clamped (\begin{DoxyParamCaption}\item[{const double}]{X,  }\item[{const double $\ast$}]{Y }\end{DoxyParamCaption}) const}
+
+
+
+Gets the local equilibrium carbon concentration, clamped to table limits. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em X} & Carbon concentration. \\
+\hline
+{\em Y} & Pointer to the data table. \\
+\hline
+\end{DoxyParams}
+\begin{DoxyReturn}{Returns}
+Local equilibrium carbon concentration. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classThermChemKin_a40601e7c64436dd5ebc4cef7ba2d7fb7}\label{classThermChemKin_a40601e7c64436dd5ebc4cef7ba2d7fb7}} 
+\index{ThermChemKin@{ThermChemKin}!LoadChemicalPotentialsAndLocalEquilibriumXC@{LoadChemicalPotentialsAndLocalEquilibriumXC}}
+\index{LoadChemicalPotentialsAndLocalEquilibriumXC@{LoadChemicalPotentialsAndLocalEquilibriumXC}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{LoadChemicalPotentialsAndLocalEquilibriumXC()}{LoadChemicalPotentialsAndLocalEquilibriumXC()}}
+{\footnotesize\ttfamily void Therm\+Chem\+Kin\+::\+Load\+Chemical\+Potentials\+And\+Local\+Equilibrium\+XC (\begin{DoxyParamCaption}\item[{const char $\ast$}]{filename,  }\item[{bool}]{Keep\+Constant\+Iron\+Atoms\+Per\+Cell }\end{DoxyParamCaption})}
+
+
+
+Loads chemical potentials and local equilibrium data from a file. 
+
+Loads the hdf5 file that contains chemical potentials of substitutional lattice, the equilibrium (paritioning) solute concentration for various interphase compositions.
+
+
+\begin{DoxyParams}{Parameters}
+{\em Thermofilename} & Filename containing the thermodynamic data. \\
+\hline
+{\em Keep\+Constant\+Iron\+Atoms\+Per\+Cell} & Boolean flag to keep constant iron atoms per cell.\\
+\hline
+{\em filename} & the name of the file with the data \\
+\hline
+{\em Keep\+Constant\+Iron\+Atoms\+Per\+Cell} & user defined flag signaling whether equilibrium requires constant at. fractions or substitional-\/to-\/total fraction \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classThermChemKin_abfad297ff75c0a2ba26acebdc8b8efc7}\label{classThermChemKin_abfad297ff75c0a2ba26acebdc8b8efc7}} 
+\index{ThermChemKin@{ThermChemKin}!MakeTablesYForGibbsVSCarbon@{MakeTablesYForGibbsVSCarbon}}
+\index{MakeTablesYForGibbsVSCarbon@{MakeTablesYForGibbsVSCarbon}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{MakeTablesYForGibbsVSCarbon()}{MakeTablesYForGibbsVSCarbon()}}
+{\footnotesize\ttfamily void Therm\+Chem\+Kin\+::\+Make\+Tables\+YFor\+Gibbs\+VSCarbon (\begin{DoxyParamCaption}\item[{const double $\ast$}]{Gibbs\+FCC\+\_\+\+As\+Read,  }\item[{const double $\ast$}]{Gibbs\+BCC\+\_\+\+As\+Read,  }\item[{const double $\ast$}]{Mu\+Substitutional\+FCC\+\_\+\+As\+Read,  }\item[{const double $\ast$}]{Mu\+Substitutional\+BCC\+\_\+\+As\+Read }\end{DoxyParamCaption})}
+
+
+
+Creates tables for Gibbs energy vs. carbon concentration. 
+
+Makes tables for carbon local equilibrium due to partitioning.
+
+
+\begin{DoxyParams}{Parameters}
+{\em Gibbs\+FCC\+\_\+\+As\+Read} & Pointer to Gibbs energy data for FCC. \\
+\hline
+{\em Gibbs\+BCC\+\_\+\+As\+Read} & Pointer to Gibbs energy data for BCC. \\
+\hline
+{\em Mu\+Substitutional\+FCC\+\_\+\+As\+Read} & Pointer to chemical potential data for FCC. \\
+\hline
+{\em Mu\+Substitutional\+BCC\+\_\+\+As\+Read} & Pointer to chemical potential data for BCC.\\
+\hline
+{\em Gibbs\+FCC\+\_\+\+As\+Read} & the Gibbs energy in FCC (J per mole) given (AND EQUIDISTANT) total carbon at interphase \\
+\hline
+{\em Gibbs\+BCC\+\_\+\+As\+Read} & the Gibbs energy in BCC (J per mole) given (AND EQUIDISTANT) total carbon at interphase \\
+\hline
+{\em Mu\+Substitutional\+FCC\+\_\+\+As\+Read} & the chemical potential of substitutional atoms in FCC (J per mole) given the (EQUIDISTANT) carbon concentration \\
+\hline
+{\em Mu\+Substitutional\+BCC\+\_\+\+As\+Read} & the chemical potential of substitutional atoms in BCC (J per mole) given (EQUIDISTANT) carbon concentration \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classThermChemKin_a67b601db6aedb05aab78265af8d305aa}\label{classThermChemKin_a67b601db6aedb05aab78265af8d305aa}} 
+\index{ThermChemKin@{ThermChemKin}!MakeTablesYForXCEqVSCarbonInterface@{MakeTablesYForXCEqVSCarbonInterface}}
+\index{MakeTablesYForXCEqVSCarbonInterface@{MakeTablesYForXCEqVSCarbonInterface}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{MakeTablesYForXCEqVSCarbonInterface()}{MakeTablesYForXCEqVSCarbonInterface()}}
+{\footnotesize\ttfamily void Therm\+Chem\+Kin\+::\+Make\+Tables\+YFor\+XCEq\+VSCarbon\+Interface (\begin{DoxyParamCaption}\item[{const double $\ast$}]{XCLocal\+Eq\+FCC\+\_\+\+As\+Read,  }\item[{const double $\ast$}]{XCLocal\+Eq\+BCC\+\_\+\+As\+Read }\end{DoxyParamCaption})}
+
+
+
+Creates tables for Y vs. equilibrium carbon concentration at the interface. 
+
+Makes tables for carbon local equilibrium due to partitioning.
+
+
+\begin{DoxyParams}{Parameters}
+{\em XCLocal\+Eq\+FCC\+\_\+\+As\+Read} & Pointer to data for FCC. \\
+\hline
+{\em XCLocal\+Eq\+BCC\+\_\+\+As\+Read} & Pointer to data for BCC.\\
+\hline
+{\em XCLocal\+Eq\+FCC\+\_\+\+As\+Read} & the FCC eq. concentration for given (AND EQUIDISTANT) total carbon at interphase \\
+\hline
+{\em XCLocal\+Eq\+BCC\+\_\+\+As\+Read} & the BCC eq. concentration for given (AND EQUIDISTANT) total carbon at interphase \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classThermChemKin_a7e077feeedcc86054891d7cc9706f925}\label{classThermChemKin_a7e077feeedcc86054891d7cc9706f925}} 
+\index{ThermChemKin@{ThermChemKin}!SetTemperatureForThisStep@{SetTemperatureForThisStep}}
+\index{SetTemperatureForThisStep@{SetTemperatureForThisStep}!ThermChemKin@{ThermChemKin}}
+\doxysubsubsection{\texorpdfstring{SetTemperatureForThisStep()}{SetTemperatureForThisStep()}}
+{\footnotesize\ttfamily void Therm\+Chem\+Kin\+::\+Set\+Temperature\+For\+This\+Step (\begin{DoxyParamCaption}\item[{double}]{temp }\end{DoxyParamCaption})\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Sets the temperature for the current simulation step. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em temp} & Temperature (K). \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/Thermo\+Chem\+Kinetics.\+h\item 
+src/Thermo\+Chem\+Kinetics.\+cpp\end{DoxyCompactItemize}

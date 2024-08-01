@@ -9,8 +9,7 @@ SRC_DIR := src
 UTILS_DIR := $(SRC_DIR)/utils
 LIBS := -lm -ltiff -lpthread -fopenmp
 
-# Definitions
-DEFINES := -D_GL_LINUX_
+
 # Includes source directories
 INCLUDE := -I$(SRC_DIR) -I$(UTILS_DIR)
 
@@ -19,7 +18,6 @@ INCLUDES := -I/usr/include/hdf5/serial
 
 # Libraries for HDF5
 LIBS += -lrt -lhdf5_serial -lhdf5_cpp -ldl -L/usr/lib/x86_64-linux-gnu/hdf5/serial
-DEFINES += -DUSE_PTHREADS
 SWIG_DEFINES :=
 
 # Source files

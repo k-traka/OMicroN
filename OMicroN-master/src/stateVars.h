@@ -1,7 +1,3 @@
-/* stateVars.h
-   OMicroN (optimising microstructures numerically) simulation program
-   header file containing stateVars class definitions and implementation
-*/
 
 #ifndef StateVars_H
 #define StateVars_H
@@ -92,7 +88,7 @@ private:
     double *mvpDiffusivityC_Ratio = nullptr;    ///< ratio of actual concentration depenent diffusivity (Agren) to the max carbon diffusivity. Written as ratio to directly go in the matrix A when solving Ax=b.
 
     int *mvpOneOfTheNeighboursGrowingInto = nullptr; ///< This is the material element's (or one of the material elements) growing to the material element with the orientation of grain mvpIdToGive. It is useful only for rexInitiation to take info from cell or processing
-     float *mvpConsumptionRate = nullptr;           ///< A cell's re-orientation rate into the orientation of one of its 1st Von Neumann neighbours
+     float *mvpConsumptionRate = nullptr;           ///< A cell's re-orientation rate into the orientation of one neighbours
     float *mvpConsumedFraction = nullptr;          ///< A cell's re-orientation fraction (divided by boundary area) into the orientation of one of its neighbours
     /// @name Grid related data
 
@@ -113,9 +109,8 @@ private:
 
     /// @name Diffusion calculation step data
     /// @{
-    int mvCGIterations;                  ///< Number of iterations during conjugate gradient method
-    float mvCGToleranceError;            ///< Error made in conjugate gradient method
-    float mvAlphaDt;                     ///< Factor used for solving carbon diffusion time step
+    float mvAlphaDt;                     ///< Factor used for solving carbon diffusion time step, mvAlphaDt = dt * maxDiffusivityInTimeStep / (mvDx * mvDx);
+
     /// @}
 
    /// @name Initialization functions
@@ -138,14 +133,29 @@ private:
   
     /// @name Diffusion calculation functions
     /// @{
-    // main functions
+/** @brief Numerical solution of diffusion step based on conjugate gradient method
+ * @param b the b=Ax (which is equal to current concentratons initially)
+ * @param TCK_p pointer to ThermChemKin instance
+ * @param maxit maximum allowed iterations
+ * @param tolerance tolerance for convergence
+ * @param initial_guess the first x values guessed (set here as current solute concentrations)
+ * @param IsPartitioningHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
+ * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
+ */
     Eigen::VectorXd NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *th_p, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere);
+  
+  /** @brief Performs one computation of the system Ax=b for Traka's diffusion / partitioning / trapping to defects
+ * Traka, 2024, Acta Materialia.
+ *
+ * @param x the solute concentrations vector which remains here as such
+ * @param TCK_p pointer to ThermChemKin instance
+ * @param b the solute concentrations vector which here changes according to the reduction of Ax
+ * @param p_dotAp dot product of new b
+ * @param IsPartitioningHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
+ * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
+ */
 
     void SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *th_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere);
-    double GetInverseDiagA(int index, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere);
-    void GetVonNeumannNeighbourCellOffsets(int index, int* lall);
-
-  
 
     ThermChemKin* mvpTCK; ///< Pointer to thermodynamic data.
 
@@ -171,11 +181,8 @@ public:
 
 
 
-    /** @brief Sets id of grain to which the cell belongs
-     *
-     * @param index Cell index
-     * @param grainId Grain id
-     */
+     /// @name Functions for setting state variables of cells
+    /// @{
 
     void SetEBSDRelatedStuffForRexAndGG(int index,float CI, int RX, float rho);
     void SetStateVariablesRelatedToRexAndGG(int index,float ReRate, int ReFraction, float MaxAnglePassed);
@@ -191,7 +198,16 @@ public:
     void SetOriIdOfCell(int index, int OriId) { mvpOriId[index] = OriId; }
     void SetIfCellHasNonIndNeighbours(int index, int HasNeighNonInd) { mvpHasNeighNonInd[index] = HasNeighNonInd; }
     void SetLatticeIdOfCell(int index, int latticeValue){mvpLatticeId[index]=latticeValue;}
-
+///@}
+    /// @name Function for deleting KAM - it is called after initialing all pointers with simulation-necessary state variables (KAM is not useful after setting dislocation density (if not read)).
+    /// @{
+void eraseKAM(){   
+     if (mvpKAM)
+    {
+        delete[] mvpKAM;
+        mvpKAM = nullptr;
+    }
+    }
     /// @name Functions for retrieving state variables of cells as they are stored in CA (orientation id, lattice id)
     /// @{
     int GetLatticeIdOfCell(int index) { return mvpLatticeId[index]; }
@@ -238,40 +254,11 @@ bool IsLatticeIdBCC(int latticeId)
     std::vector<int> GetAllNeighbourCells(int index) const;
     void GetNeighbourCellOffsets(int index, int *all_p) const;
 
-    void GetNearestNeighbourCellOffsets(int index, int *nearest_p);
-
-    /// @brief  
-    void GetVonNeumannNeighboursFromMatrix(const int index, int *all_p) const; 
-
 
     int GetGridType(void) const { return mvGridType; }
 
 
-    /// @brief Returns total number of cells
-    int GetN(void) const { return mvN; }
-    /// @brief Returns number of cells along X direction
-    int GetNx(void) const { return mvNx; }
-    /// @brief Returns number of cells along Y direction
-    int GetNy(void) const { return mvNy; }
-    /// @brief Returns number of cells along Z direction
-    int GetNz(void) const { return mvNz; }
-    /// @brief Returns the number of cells in the XY plane
-    int GetNxTimesNy(void) const { return mvNxy; }
-    /// @brief Returns number of nearest cells in the Moore neighbourhood (2D: 4, 3D: 6)
-    int GetNNearest(void) { return mvNNearest; }
-    /// @brief Returns number of second nearest cells in the Moore neighbourhood (2D: 4, 3D: 12)
-    int GetNNext(void) { return mvNNext; }
-    /// @brief Returns number of third nearest cells in the Moore neighbourhood (2D: 0, 3D: 8)
-    int GetNNextNext(void) { return mvNNextNext; }
-    /// @brief Returns total number of cells in the Moore neighbourhood (8 for 2D, 26 for 3D)
-    int GetNAll(void) { return mvNAll; }
 
-    /// @brief Returns grid size in m
-    float GetDx(void) const { return mvDx; }
-    /// @brief Returns grid size squared (i.e. cell area) in m^2
-    float GetDx2(void) const { return mvDx2; }
-    /// @brief Returns grid size cubed (i.e. cell volume) in m^3
-    float GetDx3(void) const { return mvDx3; }
 
     // i, j, k -> index
     int IJKToIndex(int i, int j, int k) const;
@@ -328,15 +315,22 @@ bool IsLatticeIdBCC(int latticeId)
 
     /// @name Diffusion calculation
     /// @{
+    
+/** @brief Solves one diffusion step
+ *
+ * @param TCK_p pointer to ThermChemKin instance
+ * @param dt predetermined time step
+ * @param AllowSoluteSegregation bool on whether we have solute trapping in general during simulation
+ * @param maxDiffusivityInTimeStep the maximum value of diffusivity between neighbour cells calculated in microstructure class
+ * @param IsPartitioningHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
+ * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
+ */
+
     void SoluteDiffusionStep(ThermChemKin *th_p, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere);
     void PutBackCarbonTrappedAndCalculateNewCarbonFreeCarbonTrapped();
     void SetCarbonTrappedAndCarbonFreeForGivenXcTot();
     /// @}
 
-    /// @name Helper function for concentrations 
-    /// @{
-    void SetWhichMolesAreConstantPerCell(bool DoIKeepConstantFe) { mvKeepConstantIronAtomsPerCell = DoIKeepConstantFe;};
-   /// @}
 
     friend class Microstructure;
 };

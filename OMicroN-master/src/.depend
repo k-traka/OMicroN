@@ -1,0 +1,3 @@
+Simulation.o: Simulation.cpp Simulation.h
+casipt.o: casipt.cpp
+main.o: main.cpp Simulation.h

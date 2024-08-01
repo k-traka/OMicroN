@@ -1,0 +1,136 @@
+\hypertarget{orientation_8h}{}\doxysection{src/orientation.h File Reference}
+\label{orientation_8h}\index{src/orientation.h@{src/orientation.h}}
+{\ttfamily \#include \char`\"{}settings.\+h\char`\"{}}\newline
+{\ttfamily \#include $<$array$>$}\newline
+{\ttfamily \#include $<$cmath$>$}\newline
+{\ttfamily \#include $<$eigen3/\+Eigen/\+Core$>$}\newline
+{\ttfamily \#include $<$eigen3/\+Eigen/\+Geometry$>$}\newline
+{\ttfamily \#include $<$iostream$>$}\newline
+{\ttfamily \#include $<$vector$>$}\newline
+Include dependency graph for orientation.\+h\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=350pt]{orientation_8h__incl}
+\end{center}
+\end{figure}
+This graph shows which files directly or indirectly include this file\+:\nopagebreak
+\begin{figure}[H]
+\begin{center}
+\leavevmode
+\includegraphics[width=194pt]{orientation_8h__dep__incl}
+\end{center}
+\end{figure}
+\doxysubsection*{Classes}
+\begin{DoxyCompactItemize}
+\item 
+class \mbox{\hyperlink{classOrientations}{Orientations}}
+\begin{DoxyCompactList}\small\item\em Class to handle orientations and symmetry operations. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Macros}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}\label{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}} 
+\#define \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(A,  X,  Y,  Z)~Eigen\+::\+Quaternionf(Eigen\+::\+Angle\+Axisf(A, Eigen\+::\+Vector3f(X, Y, Z) / sqrt(X $\ast$ X + Y $\ast$ Y + Z $\ast$ Z))).normalized()
+\begin{DoxyCompactList}\small\item\em Convert rotation in the angle-\/axis representation to quaternion. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Variables}
+\begin{Indent}\textbf{ Constants}\par
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{orientation_8h_a98195c262e20fb7c9ab4701e39896c4d}\label{orientation_8h_a98195c262e20fb7c9ab4701e39896c4d}} 
+const float \mbox{\hyperlink{orientation_8h_a98195c262e20fb7c9ab4701e39896c4d}{MISORIENTATION\+\_\+\+MAX}} = 64.\+0f
+\begin{DoxyCompactList}\small\item\em Maximum misorientation angle. 63.\+8 degrees for cubic symmetry. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\end{Indent}
+\begin{Indent}\textbf{ Symmetry and Orientation Relationship Operators}\par
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{orientation_8h_ad5f1995bc0f2d99181445d22866395b1}\label{orientation_8h_ad5f1995bc0f2d99181445d22866395b1}} 
+const int \mbox{\hyperlink{orientation_8h_ad5f1995bc0f2d99181445d22866395b1}{N\+\_\+\+SYM}} = 24
+\begin{DoxyCompactList}\small\item\em Number of symmetry operators for the cubic system. \end{DoxyCompactList}\item 
+const Eigen\+::\+Quaternionf \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}} \mbox{[}\mbox{\hyperlink{orientation_8h_ad5f1995bc0f2d99181445d22866395b1}{N\+\_\+\+SYM}}\mbox{]}
+\begin{DoxyCompactList}\small\item\em Cubic symmetry operators (0-\/23) \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{orientation_8h_ae0de112156e79b4e8f569026e165e390}\label{orientation_8h_ae0de112156e79b4e8f569026e165e390}} 
+const int \mbox{\hyperlink{orientation_8h_ae0de112156e79b4e8f569026e165e390}{N\+\_\+\+CSL19a}} = \mbox{\hyperlink{orientation_8h_ad5f1995bc0f2d99181445d22866395b1}{N\+\_\+\+SYM}}
+\begin{DoxyCompactList}\small\item\em Number of CSL19a equivalent representations (i.\+e., 27 degrees around $<$110$>$) orientation relationships. \end{DoxyCompactList}\item 
+const Eigen\+::\+Quaternionf \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}} \mbox{[}\mbox{\hyperlink{orientation_8h_ae0de112156e79b4e8f569026e165e390}{N\+\_\+\+CSL19a}}\mbox{]}
+\end{DoxyCompactItemize}
+\end{Indent}
+
+
+\doxysubsection{Detailed Description}
+OMicroN (Optimizing Microstructures Numerically) simulation program. Header file containing the \mbox{\hyperlink{classOrientations}{Orientations}} class definitions and implementation. 
+
+\doxysubsection{Variable Documentation}
+\mbox{\Hypertarget{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}\label{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}} 
+\index{orientation.h@{orientation.h}!CSL19a@{CSL19a}}
+\index{CSL19a@{CSL19a}!orientation.h@{orientation.h}}
+\doxysubsubsection{\texorpdfstring{CSL19a}{CSL19a}}
+{\footnotesize\ttfamily const Eigen\+::\+Quaternionf CSL19a\mbox{[}\mbox{\hyperlink{orientation_8h_ae0de112156e79b4e8f569026e165e390}{N\+\_\+\+CSL19a}}\mbox{]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \{}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(0.463f, -\/0.7071f, 0.0f, 0.7071f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[1],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[2],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[3],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[4],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[5],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[6],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[7],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[8],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[9],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[10],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[11],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[12],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[13],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[14],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[15],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[16],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[17],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[18],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[19],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[20],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[21],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[22],}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_a872c58fdc56ca96ebe08f106c9b0bba3}{CSL19a}}[0] * \mbox{\hyperlink{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}{SYM}}[23]\}}
+
+\end{DoxyCode}
+Symmetrically equivalent operators to apply the CSL19a (Ibe and Lucke) \mbox{\Hypertarget{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}\label{orientation_8h_a6da2d07abf5bbbfcf532c084428a0ea5}} 
+\index{orientation.h@{orientation.h}!SYM@{SYM}}
+\index{SYM@{SYM}!orientation.h@{orientation.h}}
+\doxysubsubsection{\texorpdfstring{SYM}{SYM}}
+{\footnotesize\ttfamily const Eigen\+::\+Quaternionf SYM\mbox{[}\mbox{\hyperlink{orientation_8h_ad5f1995bc0f2d99181445d22866395b1}{N\+\_\+\+SYM}}\mbox{]}}
+
+{\bfseries Initial value\+:}
+\begin{DoxyCode}{0}
+\DoxyCodeLine{= \{}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(0.0f, 1.0f, 0.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, 1.0f, 0.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, 0.0f, 1.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, 0.0f, 0.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI / 2.0f, 1.0f, 0.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI / 2.0f, 0.0f, 1.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI / 2.0f, 0.0f, 0.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI / 2.0f, -\/1.0f, 0.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI / 2.0f, 0.0f, -\/1.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI / 2.0f, 0.0f, 0.0f, -\/1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, 1.0f, 1.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, 1.0f, 0.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, 0.0f, 1.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, 1.0f, -\/1.0f, 0.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, -\/1.0f, 0.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI, 0.0f, 1.0f, -\/1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI * 2.0f / 3.0f, 1.0f, 1.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI * 2.0f / 3.0f, 1.0f, -\/1.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI * 2.0f / 3.0f, -\/1.0f, 1.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI * 2.0f / 3.0f, -\/1.0f, -\/1.0f, 1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI * 2.0f / 3.0f, 1.0f, 1.0f, -\/1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI * 2.0f / 3.0f, 1.0f, -\/1.0f, -\/1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI * 2.0f / 3.0f, -\/1.0f, 1.0f, -\/1.0f),}
+\DoxyCodeLine{    \mbox{\hyperlink{orientation_8h_aaaeba90739d8021f5970ae1cd61ca206}{AA2Q}}(M\_PI * 2.0f / 3.0f, -\/1.0f, -\/1.0f, -\/1.0f)\}}
+
+\end{DoxyCode}
+
+
+Cubic symmetry operators (0-\/23) 
+

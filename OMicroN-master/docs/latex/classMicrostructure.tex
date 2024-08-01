@@ -1,0 +1,194 @@
+\hypertarget{classMicrostructure}{}\doxysection{Microstructure Class Reference}
+\label{classMicrostructure}\index{Microstructure@{Microstructure}}
+
+
+Manages the microstructure simulation for solid state transformations (phase transformations, recrystallization, grain growth) and solute redistribution (partitioning, diffusion, trapping to defects).  
+
+
+
+
+{\ttfamily \#include $<$microstructure.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classMicrostructure_a2aea6fbd530baf64cd1cdc8436262010}{Microstructure}} (const \mbox{\hyperlink{classUserSettings}{User\+Settings}} \&user\+Settings)
+\begin{DoxyCompactList}\small\item\em Constructs a \mbox{\hyperlink{classMicrostructure}{Microstructure}} object with user settings. \end{DoxyCompactList}\item 
+bool \mbox{\hyperlink{classMicrostructure_acd9955a35941ad3f15a986c26c388b22}{Is\+Still\+Simulating}} () const
+\begin{DoxyCompactList}\small\item\em Checks if the simulation is still running. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMicrostructure_ab6cf097de9387caafec0b545aa6dfa73}\label{classMicrostructure_ab6cf097de9387caafec0b545aa6dfa73}} 
+void \mbox{\hyperlink{classMicrostructure_ab6cf097de9387caafec0b545aa6dfa73}{print\+Microstructure\+Parameters}} () const
+\begin{DoxyCompactList}\small\item\em Prints the microstructure parameters. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classMicrostructure_a04ac137629bf02a7ba3cf093e92099d8}\label{classMicrostructure_a04ac137629bf02a7ba3cf093e92099d8}} 
+void \mbox{\hyperlink{classMicrostructure_a04ac137629bf02a7ba3cf093e92099d8}{Simulation\+Step}} ()
+\begin{DoxyCompactList}\small\item\em Executes a simulation step. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMicrostructure_aed7c0f573c3a4b70cb56cce6b002c575}{Add\+Interface\+Index}} (int index)
+\begin{DoxyCompactList}\small\item\em Adds an index to the set of interface indices. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMicrostructure_adeee1cbb795199f3ddf61f9eb0a19a14}{Remove\+Interface\+Index}} (int index)
+\begin{DoxyCompactList}\small\item\em Removes an index from the set of interface indices. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMicrostructure_aa2e1b3164d3e58d74253c8a9b02bfe43}{Add\+Interphase\+Index}} (int index)
+\begin{DoxyCompactList}\small\item\em Adds an index to the set of interphase indices. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classMicrostructure_ab9de9d82b7707bd296bb6d012973ed31}{Remove\+Interphase\+Index}} (int index)
+\begin{DoxyCompactList}\small\item\em Removes an index from the set of interphase indices. \end{DoxyCompactList}\item 
+const std\+::unordered\+\_\+set$<$ int $>$ \& \mbox{\hyperlink{classMicrostructure_a1470d363c2d3897fd0a1d1ea7fa4ef3b}{Get\+Interface\+Indices}} () const
+\begin{DoxyCompactList}\small\item\em Gets the set of interface indices. \end{DoxyCompactList}\item 
+const std\+::unordered\+\_\+set$<$ int $>$ \& \mbox{\hyperlink{classMicrostructure_abc7b8be8abea0cbd2a7424ed3f68cc7d}{Get\+Interphase\+Indices}} () const
+\begin{DoxyCompactList}\small\item\em Gets the set of interphase indices. \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Manages the microstructure simulation for solid state transformations (phase transformations, recrystallization, grain growth) and solute redistribution (partitioning, diffusion, trapping to defects). 
+
+This class handles the initialization, simulation steps, and state management for the microstructure in the OMicroN simulation program. It interacts with all other classes, setting state variables and parameters, and retrieving information from instances.
+
+Additionally, it is the main class responsible for writing and exporting simulation outputs. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classMicrostructure_a2aea6fbd530baf64cd1cdc8436262010}\label{classMicrostructure_a2aea6fbd530baf64cd1cdc8436262010}} 
+\index{Microstructure@{Microstructure}!Microstructure@{Microstructure}}
+\index{Microstructure@{Microstructure}!Microstructure@{Microstructure}}
+\doxysubsubsection{\texorpdfstring{Microstructure()}{Microstructure()}}
+{\footnotesize\ttfamily Microstructure\+::\+Microstructure (\begin{DoxyParamCaption}\item[{const \mbox{\hyperlink{classUserSettings}{User\+Settings}} \&}]{user\+Settings }\end{DoxyParamCaption})}
+
+
+
+Constructs a \mbox{\hyperlink{classMicrostructure}{Microstructure}} object with user settings. 
+
+Constructor for the \mbox{\hyperlink{classMicrostructure}{Microstructure}} class.
+
+
+\begin{DoxyParams}{Parameters}
+{\em user\+Settings} & Reference to user settings.\\
+\hline
+\end{DoxyParams}
+Initializes the microstructure simulation with default or user-\/specified parameters. This function sets up necessary data structures and prepares the class for simulation steps.
+
+
+\begin{DoxyParams}{Parameters}
+{\em input\+File} & The path to the input file containing user-\/defined settings. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classMicrostructure_aed7c0f573c3a4b70cb56cce6b002c575}\label{classMicrostructure_aed7c0f573c3a4b70cb56cce6b002c575}} 
+\index{Microstructure@{Microstructure}!AddInterfaceIndex@{AddInterfaceIndex}}
+\index{AddInterfaceIndex@{AddInterfaceIndex}!Microstructure@{Microstructure}}
+\doxysubsubsection{\texorpdfstring{AddInterfaceIndex()}{AddInterfaceIndex()}}
+{\footnotesize\ttfamily void Microstructure\+::\+Add\+Interface\+Index (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption})}
+
+
+
+Adds an index to the set of interface indices. 
+
+Updates set of (sub)grain boundary cells by adding the cell of index, and updates cell\textquotesingle{}s (index) identity regarding whether it is interface.
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Index to add.\\
+\hline
+{\em index} & the cell\textquotesingle{}s index that will now be recognized as (sub)grain boundary cell \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMicrostructure_aa2e1b3164d3e58d74253c8a9b02bfe43}\label{classMicrostructure_aa2e1b3164d3e58d74253c8a9b02bfe43}} 
+\index{Microstructure@{Microstructure}!AddInterphaseIndex@{AddInterphaseIndex}}
+\index{AddInterphaseIndex@{AddInterphaseIndex}!Microstructure@{Microstructure}}
+\doxysubsubsection{\texorpdfstring{AddInterphaseIndex()}{AddInterphaseIndex()}}
+{\footnotesize\ttfamily void Microstructure\+::\+Add\+Interphase\+Index (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption})}
+
+
+
+Adds an index to the set of interphase indices. 
+
+Updates set of phase boundary cells by adding the cell of index, and updates cell\textquotesingle{}s (index) identity regarding whether it is interface.
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Index to add.\\
+\hline
+{\em index} & the cell\textquotesingle{}s index that will now be recognized as phase cell \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMicrostructure_a1470d363c2d3897fd0a1d1ea7fa4ef3b}\label{classMicrostructure_a1470d363c2d3897fd0a1d1ea7fa4ef3b}} 
+\index{Microstructure@{Microstructure}!GetInterfaceIndices@{GetInterfaceIndices}}
+\index{GetInterfaceIndices@{GetInterfaceIndices}!Microstructure@{Microstructure}}
+\doxysubsubsection{\texorpdfstring{GetInterfaceIndices()}{GetInterfaceIndices()}}
+{\footnotesize\ttfamily const std\+::unordered\+\_\+set$<$int$>$\& Microstructure\+::\+Get\+Interface\+Indices (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets the set of interface indices. 
+
+\begin{DoxyReturn}{Returns}
+Const reference to the set of interface indices. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMicrostructure_abc7b8be8abea0cbd2a7424ed3f68cc7d}\label{classMicrostructure_abc7b8be8abea0cbd2a7424ed3f68cc7d}} 
+\index{Microstructure@{Microstructure}!GetInterphaseIndices@{GetInterphaseIndices}}
+\index{GetInterphaseIndices@{GetInterphaseIndices}!Microstructure@{Microstructure}}
+\doxysubsubsection{\texorpdfstring{GetInterphaseIndices()}{GetInterphaseIndices()}}
+{\footnotesize\ttfamily const std\+::unordered\+\_\+set$<$int$>$\& Microstructure\+::\+Get\+Interphase\+Indices (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Gets the set of interphase indices. 
+
+\begin{DoxyReturn}{Returns}
+Const reference to the set of interphase indices. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMicrostructure_acd9955a35941ad3f15a986c26c388b22}\label{classMicrostructure_acd9955a35941ad3f15a986c26c388b22}} 
+\index{Microstructure@{Microstructure}!IsStillSimulating@{IsStillSimulating}}
+\index{IsStillSimulating@{IsStillSimulating}!Microstructure@{Microstructure}}
+\doxysubsubsection{\texorpdfstring{IsStillSimulating()}{IsStillSimulating()}}
+{\footnotesize\ttfamily bool Microstructure\+::\+Is\+Still\+Simulating (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Checks if the simulation is still running. 
+
+\begin{DoxyReturn}{Returns}
+True if the simulation is still running, otherwise false. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classMicrostructure_adeee1cbb795199f3ddf61f9eb0a19a14}\label{classMicrostructure_adeee1cbb795199f3ddf61f9eb0a19a14}} 
+\index{Microstructure@{Microstructure}!RemoveInterfaceIndex@{RemoveInterfaceIndex}}
+\index{RemoveInterfaceIndex@{RemoveInterfaceIndex}!Microstructure@{Microstructure}}
+\doxysubsubsection{\texorpdfstring{RemoveInterfaceIndex()}{RemoveInterfaceIndex()}}
+{\footnotesize\ttfamily void Microstructure\+::\+Remove\+Interface\+Index (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption})}
+
+
+
+Removes an index from the set of interface indices. 
+
+Updates set of (sub)grain boundary cells by removing the cell of index, and updates cell\textquotesingle{}s (index) identity regarding whether it is interface.
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Index to remove.\\
+\hline
+{\em index} & the cell\textquotesingle{}s index that will no longer be recognized as (sub)grain boundary cell \\
+\hline
+\end{DoxyParams}
+\mbox{\Hypertarget{classMicrostructure_ab9de9d82b7707bd296bb6d012973ed31}\label{classMicrostructure_ab9de9d82b7707bd296bb6d012973ed31}} 
+\index{Microstructure@{Microstructure}!RemoveInterphaseIndex@{RemoveInterphaseIndex}}
+\index{RemoveInterphaseIndex@{RemoveInterphaseIndex}!Microstructure@{Microstructure}}
+\doxysubsubsection{\texorpdfstring{RemoveInterphaseIndex()}{RemoveInterphaseIndex()}}
+{\footnotesize\ttfamily void Microstructure\+::\+Remove\+Interphase\+Index (\begin{DoxyParamCaption}\item[{int}]{index }\end{DoxyParamCaption})}
+
+
+
+Removes an index from the set of interphase indices. 
+
+Updates set of phase boundary cells by removing the cell of index, and updates cell\textquotesingle{}s (index) identity regarding whether it is interface.
+
+
+\begin{DoxyParams}{Parameters}
+{\em index} & Index to remove.\\
+\hline
+{\em index} & the cell\textquotesingle{}s index that will now no longer recognized as phase cell \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/microstructure.\+h\item 
+src/microstructure.\+cpp\end{DoxyCompactItemize}

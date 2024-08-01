@@ -1,0 +1,261 @@
+\hypertarget{classUserSettings}{}\doxysection{User\+Settings Class Reference}
+\label{classUserSettings}\index{UserSettings@{UserSettings}}
+
+
+Handles all the simulation parameters and sets them according to the input file and/or default values.  
+
+
+
+
+{\ttfamily \#include $<$settings.\+h$>$}
+
+\doxysubsection*{Public Member Functions}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\hyperlink{classUserSettings_a33ae7f24f3fd854cd3d447bdca8810bd}{User\+Settings}} (const std\+::string \&input\+File)
+\begin{DoxyCompactList}\small\item\em Constructor that initializes settings from the input file. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_ae9c5d750f44c61c683aaa3d7185c9010}\label{classUserSettings_ae9c5d750f44c61c683aaa3d7185c9010}} 
+void \mbox{\hyperlink{classUserSettings_ae9c5d750f44c61c683aaa3d7185c9010}{set\+Default\+Values}} ()
+\begin{DoxyCompactList}\small\item\em Sets default values for all parameters. If a parameter is found in the input file, its value will be used instead. \end{DoxyCompactList}\item 
+void \mbox{\hyperlink{classUserSettings_ad89e61f95c2626db8e2a0d5d2ab5eb4a}{write\+To\+File}} (const std\+::string \&output\+File)
+\begin{DoxyCompactList}\small\item\em Writes the settings to the output file, including default values. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a6b244c5064a4528d975e18451f55b021}\label{classUserSettings_a6b244c5064a4528d975e18451f55b021}} 
+void \mbox{\hyperlink{classUserSettings_a6b244c5064a4528d975e18451f55b021}{print\+Parameters}} ()
+\begin{DoxyCompactList}\small\item\em Prints the parameters as read from the input file. \end{DoxyCompactList}\item 
+std\+::string \mbox{\hyperlink{classUserSettings_a85c02aab7e986dacf4a5011388371fe2}{get\+Start\+File\+Name}} () const
+\begin{DoxyCompactList}\small\item\em Returns the path to the input (starting) microstructure file. \end{DoxyCompactList}\item 
+std\+::string \mbox{\hyperlink{classUserSettings_a923df105e3c4dcd4cb0af92efeed40ab}{get\+Output\+Folder\+Path}} () const
+\begin{DoxyCompactList}\small\item\em Returns the path to the folder where simulation outputs are stored. \end{DoxyCompactList}\item 
+std\+::string \mbox{\hyperlink{classUserSettings_a1808cce60452ce57bef5b88b93328c8f}{get\+Thermodynamic\+Data\+File}} () const
+\begin{DoxyCompactList}\small\item\em Returns the path to the file containing thermodynamic data. \end{DoxyCompactList}\end{DoxyCompactItemize}
+\doxysubsection*{Public Attributes}
+\begin{DoxyCompactItemize}
+\item 
+\mbox{\Hypertarget{classUserSettings_a567d31a936881979034a23a956b65a24}\label{classUserSettings_a567d31a936881979034a23a956b65a24}} 
+double \mbox{\hyperlink{classUserSettings_a567d31a936881979034a23a956b65a24}{mv\+Time\+Step}}
+\begin{DoxyCompactList}\small\item\em Desired time step for solute redistribution. Note\+: When recrystallization and grain growth are simulated, the time step will adapt to the maximum reorientation rate. Note\+: When simulating solute redistribution the user must set it according to the highest expected diffusion rate, which in the numerical system is dt $\ast$ max\+Diffusivity\+In\+Time\+Step / (mv\+Dx $\ast$ mv\+Dx). So dt must be chosen such as dt $\ast$ max\+Diffusivity\+In\+Time\+Step / (mv\+Dx $\ast$ mv\+Dx) is lower than 1. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a18c359c72f2f42c01e640e7b343f188e}\label{classUserSettings_a18c359c72f2f42c01e640e7b343f188e}} 
+double \mbox{\hyperlink{classUserSettings_a18c359c72f2f42c01e640e7b343f188e}{mv\+Start\+Temperature}}
+\begin{DoxyCompactList}\small\item\em Temperature at the beginning of the applied treatment (in K). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a1463349fc7beb4469897d34c146fff9f}\label{classUserSettings_a1463349fc7beb4469897d34c146fff9f}} 
+double \mbox{\hyperlink{classUserSettings_a1463349fc7beb4469897d34c146fff9f}{mv\+End\+Temperature}}
+\begin{DoxyCompactList}\small\item\em Temperature at the end of the applied treatment (in K). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a5c4fc8ca7c6b913b004f6d999d7ab97f}\label{classUserSettings_a5c4fc8ca7c6b913b004f6d999d7ab97f}} 
+double \mbox{\hyperlink{classUserSettings_a5c4fc8ca7c6b913b004f6d999d7ab97f}{mv\+Time\+Total}}
+\begin{DoxyCompactList}\small\item\em Total simulation time (s). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a6b4cde7adcd45c94f89e4a7c3729f872}\label{classUserSettings_a6b4cde7adcd45c94f89e4a7c3729f872}} 
+int \mbox{\hyperlink{classUserSettings_a6b4cde7adcd45c94f89e4a7c3729f872}{mv\+Nx}}
+\begin{DoxyCompactList}\small\item\em Number of elements in the x direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a7a624b026feaef24f553850178fe2c81}\label{classUserSettings_a7a624b026feaef24f553850178fe2c81}} 
+int \mbox{\hyperlink{classUserSettings_a7a624b026feaef24f553850178fe2c81}{mv\+Ny}}
+\begin{DoxyCompactList}\small\item\em Number of elements in the y direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a90cd7f31f5c3c6d68bcab7e85fba7ef4}\label{classUserSettings_a90cd7f31f5c3c6d68bcab7e85fba7ef4}} 
+int \mbox{\hyperlink{classUserSettings_a90cd7f31f5c3c6d68bcab7e85fba7ef4}{mv\+Nz}}
+\begin{DoxyCompactList}\small\item\em Number of elements in the z direction. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_aa41aec38b1987d877aa7e71f9f27253b}\label{classUserSettings_aa41aec38b1987d877aa7e71f9f27253b}} 
+double \mbox{\hyperlink{classUserSettings_aa41aec38b1987d877aa7e71f9f27253b}{mv\+Dx}}
+\begin{DoxyCompactList}\small\item\em Grid spacing (m). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a69a48759e6062c717049fd5db4f125a0}\label{classUserSettings_a69a48759e6062c717049fd5db4f125a0}} 
+int \mbox{\hyperlink{classUserSettings_a69a48759e6062c717049fd5db4f125a0}{mv\+Grid\+Type}}
+\begin{DoxyCompactList}\small\item\em Integer determining the type of grid used. 0 is regular (square/cubic) and 1 is hexagonal. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_af58c02180e2dae27b86d639955bc600a}\label{classUserSettings_af58c02180e2dae27b86d639955bc600a}} 
+int \mbox{\hyperlink{classUserSettings_af58c02180e2dae27b86d639955bc600a}{mv\+Has\+Solute\+Diffusion}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether solute redistribution (e.\+g., diffusion, partitioning, trapping) should be simulated. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a9e2129ddcd95cf3b061b4f10639181b7}\label{classUserSettings_a9e2129ddcd95cf3b061b4f10639181b7}} 
+int \mbox{\hyperlink{classUserSettings_a9e2129ddcd95cf3b061b4f10639181b7}{mv\+Is\+Rex\+And\+GG}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether interface migration in the same phase (e.\+g., recrystallization and grain growth) should be simulated. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a517e054c891b216b2ffc88cc8f9341b7}\label{classUserSettings_a517e054c891b216b2ffc88cc8f9341b7}} 
+float \mbox{\hyperlink{classUserSettings_a517e054c891b216b2ffc88cc8f9341b7}{mv\+Lower\+Misorientation\+Cut\+Off}}
+\begin{DoxyCompactList}\small\item\em Misorientation below which any misorientation between pixels is considered noise and no orientation gradient is considered (e.\+g., 0.\+4 degrees). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_af021e2c16756a7ce72d74e644c304a56}\label{classUserSettings_af021e2c16756a7ce72d74e644c304a56}} 
+float \mbox{\hyperlink{classUserSettings_af021e2c16756a7ce72d74e644c304a56}{mv\+HAGB}}
+\begin{DoxyCompactList}\small\item\em Misorientation above which a high-\/angle grain boundary is considered. Energy density and mobility are constant above this value (e.\+g., 15 degrees). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_ada3cc947d93e384b9a0a2812e10e4ef7}\label{classUserSettings_ada3cc947d93e384b9a0a2812e10e4ef7}} 
+std\+::string \mbox{\hyperlink{classUserSettings_ada3cc947d93e384b9a0a2812e10e4ef7}{mv\+Start\+File\+Name}}
+\begin{DoxyCompactList}\small\item\em Path to the input (starting) microstructure file. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a971e72960a0f8db7bb3caa784de51e31}\label{classUserSettings_a971e72960a0f8db7bb3caa784de51e31}} 
+std\+::string \mbox{\hyperlink{classUserSettings_a971e72960a0f8db7bb3caa784de51e31}{mv\+Output\+Folder\+Path}}
+\begin{DoxyCompactList}\small\item\em Path to the folder where simulation output files are written. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a771eb6b8252449a18d50adb377c0b004}\label{classUserSettings_a771eb6b8252449a18d50adb377c0b004}} 
+std\+::string \mbox{\hyperlink{classUserSettings_a771eb6b8252449a18d50adb377c0b004}{mv\+Thermodynamics\+Data\+Filename}}
+\begin{DoxyCompactList}\small\item\em Path to the HDF5 file containing thermodynamic inputs for solute partitioning and/or phase transformations. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a4eb9b9d924c628788260c429c6ea217e}\label{classUserSettings_a4eb9b9d924c628788260c429c6ea217e}} 
+int \mbox{\hyperlink{classUserSettings_a4eb9b9d924c628788260c429c6ea217e}{mv\+Is\+Test\+RVE}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether the simulation involves microstructure evolution (considering imported state variables) or code testing. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a297003465b0a4bac23a395c7ec2cab7e}\label{classUserSettings_a297003465b0a4bac23a395c7ec2cab7e}} 
+int \mbox{\hyperlink{classUserSettings_a297003465b0a4bac23a395c7ec2cab7e}{mv\+Test\+Von\+Neumann\+In\+Square}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether the code is tested for grain growth. Turn on means modeling grain growth in an unacceptable grid, useful for testing. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_ae6f879fefe75f37db67e72d4fbdaaffb}\label{classUserSettings_ae6f879fefe75f37db67e72d4fbdaaffb}} 
+int \mbox{\hyperlink{classUserSettings_ae6f879fefe75f37db67e72d4fbdaaffb}{mv\+Allow\+Periodic\+Bound\+Conditions}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether boundary conditions are enabled. Turning off is useful for test simulations of specific cases or recrystallization in very small RVEs. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_af4ea3352377588612c8910d43919f5c4}\label{classUserSettings_af4ea3352377588612c8910d43919f5c4}} 
+float \mbox{\hyperlink{classUserSettings_af4ea3352377588612c8910d43919f5c4}{mv\+Minimum\+CI}}
+\begin{DoxyCompactList}\small\item\em Minimum confidence index for valid crystal orientations imported (useful when importing uncleaned EBSD microstructures). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a3d38416a37b7cf2e7c04de88a8429f95}\label{classUserSettings_a3d38416a37b7cf2e7c04de88a8429f95}} 
+float \mbox{\hyperlink{classUserSettings_a3d38416a37b7cf2e7c04de88a8429f95}{mv\+Rex\+GGParameterC}}
+\begin{DoxyCompactList}\small\item\em Parameter C that calibrates the driving force for grain growth and recrystallization. Accepted values are 0.\+5, 0.\+7, 1.\+0. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a8beb9a3b1b3186a586730a688a86e3ec}\label{classUserSettings_a8beb9a3b1b3186a586730a688a86e3ec}} 
+int \mbox{\hyperlink{classUserSettings_a8beb9a3b1b3186a586730a688a86e3ec}{mv\+Read\+Dislocation\+Density}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether the dislocation density provided by the input file should be used in the simulation. Turn off means calculating local dislocation density based on orientation gradients. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a095150fbe7b799f72a3a5731fbfa619d}\label{classUserSettings_a095150fbe7b799f72a3a5731fbfa619d}} 
+int \mbox{\hyperlink{classUserSettings_a095150fbe7b799f72a3a5731fbfa619d}{mv\+Include\+CSL19\+Fast\+Growth}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether CSL19 boundaries (Ibe and Lucke) grow faster. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_adca64fa905fb2a347b2e0b37cf157aa7}\label{classUserSettings_adca64fa905fb2a347b2e0b37cf157aa7}} 
+int \mbox{\hyperlink{classUserSettings_adca64fa905fb2a347b2e0b37cf157aa7}{mv\+Is\+Only\+An\+Orientation\+Subset\+Considered}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether only a subset of orientations is considered in the microstructure evolution. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_aa3ab4bb24cf4090aefdf1d1474a06f9b}\label{classUserSettings_aa3ab4bb24cf4090aefdf1d1474a06f9b}} 
+int \mbox{\hyperlink{classUserSettings_aa3ab4bb24cf4090aefdf1d1474a06f9b}{mv\+Consider\+Constant\+Iron\+Atoms\+Per\+Cell}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether mass conservation for solutes refers to C/\+Fe or C/(Fe+C). C/\+Fe is more accurate, while C/(Fe+C) is commonly used. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a7cee44870727ef73887acae260bfc608}\label{classUserSettings_a7cee44870727ef73887acae260bfc608}} 
+int \mbox{\hyperlink{classUserSettings_a7cee44870727ef73887acae260bfc608}{mv\+Solute\+Segregation\+Dislocations}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether solute trapping to defects should be considered. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a3386c0ece02a6afcebaa991998e02b27}\label{classUserSettings_a3386c0ece02a6afcebaa991998e02b27}} 
+double \mbox{\hyperlink{classUserSettings_a3386c0ece02a6afcebaa991998e02b27}{mv\+Kappa\+Factor\+For\+Cseg\+In\+Cluster\+Area}}
+\begin{DoxyCompactList}\small\item\em Mesoscale enrichment ratio at defects (e.\+g., k = 7$\ast$10$^\wedge$-\/15). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a936d443313d61b909382c6fccfa1371a}\label{classUserSettings_a936d443313d61b909382c6fccfa1371a}} 
+int \mbox{\hyperlink{classUserSettings_a936d443313d61b909382c6fccfa1371a}{mv\+Allow\+Dislocations\+Segregation\+In\+Austenite}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether solute trapping to defects in the soft phase (e.\+g., austenite) should be considered. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a52a15b18fcd6c73068b4d946c053b5f1}\label{classUserSettings_a52a15b18fcd6c73068b4d946c053b5f1}} 
+int \mbox{\hyperlink{classUserSettings_a52a15b18fcd6c73068b4d946c053b5f1}{mv\+Include\+Carbon\+Interphase\+Partitioning}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether solute phase partitioning is to be simulated. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a79634297b3e808266f696f7397b4243b}\label{classUserSettings_a79634297b3e808266f696f7397b4243b}} 
+int \mbox{\hyperlink{classUserSettings_a79634297b3e808266f696f7397b4243b}{mv\+Is\+Solute\+Segregation\+Happening\+In\+Diffusion\+Step}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether solute trapping to defects is part of the numerical solution of diffusion. Recommended for mesh-\/ and time step-\/independent simulation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_ab4a34d163945ae8acdf8739b9e945e35}\label{classUserSettings_ab4a34d163945ae8acdf8739b9e945e35}} 
+int \mbox{\hyperlink{classUserSettings_ab4a34d163945ae8acdf8739b9e945e35}{mv\+Is\+Partitioning\+Happening\+In\+Diffusion\+Step}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether solute phase partitioning is part of the numerical solution of diffusion. Recommended for mesh-\/ and time step-\/independent simulation. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a733809ba91d875aceff6dbd3cae0ef9a}\label{classUserSettings_a733809ba91d875aceff6dbd3cae0ef9a}} 
+int \mbox{\hyperlink{classUserSettings_a733809ba91d875aceff6dbd3cae0ef9a}{mv\+Carbon\+Partitioning\+From\+Interpolated\+Solutions}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether solute phase partitioning follows thermodynamic inputs for local concentrations. Turn off means using pre-\/defined analytical expressions. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_ada903ac0bff84885d081c5c673e0d47c}\label{classUserSettings_ada903ac0bff84885d081c5c673e0d47c}} 
+int \mbox{\hyperlink{classUserSettings_ada903ac0bff84885d081c5c673e0d47c}{mv\+Allow\+Interface\+Movement\+During\+Partitioning}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether phase transformation simulation is enabled. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_ac6fc30595a1564150b8de7b31e215ab9}\label{classUserSettings_ac6fc30595a1564150b8de7b31e215ab9}} 
+int \mbox{\hyperlink{classUserSettings_ac6fc30595a1564150b8de7b31e215ab9}{mv\+Concentration\+Dependent\+Diffusivity\+In\+Austenite}}
+\begin{DoxyCompactList}\small\item\em Flag indicating whether diffusivity follows Agren\textquotesingle{}s concentration-\/dependent expression (useful when simulating carbon). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a7f6c1f2df45449b5d60cc0ee770f4236}\label{classUserSettings_a7f6c1f2df45449b5d60cc0ee770f4236}} 
+double \mbox{\hyperlink{classUserSettings_a7f6c1f2df45449b5d60cc0ee770f4236}{mv\+Xc\+To\+Use\+Constant\+Diffusivity\+Agren\+In\+Austenite}}
+\begin{DoxyCompactList}\small\item\em Carbon concentration that is used as \char`\"{}effective\char`\"{} value at which Agren\textquotesingle{}s concentration-\/dependent expression gives diffusivity (useful when the simulation leads to high localized carbon contents which would then require very high time steps). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a01173e560d8f53b4848d6799ec997ef2}\label{classUserSettings_a01173e560d8f53b4848d6799ec997ef2}} 
+double \mbox{\hyperlink{classUserSettings_a01173e560d8f53b4848d6799ec997ef2}{mv\+Average\+Carbon}}
+\begin{DoxyCompactList}\small\item\em Concentration of solute (carbon or other) that redistributes through the simulation (atomic fraction). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a894346190d7c536ed7f7b01229ae0fab}\label{classUserSettings_a894346190d7c536ed7f7b01229ae0fab}} 
+double \mbox{\hyperlink{classUserSettings_a894346190d7c536ed7f7b01229ae0fab}{mv\+Burgers\+Vector\+BCC}}
+\begin{DoxyCompactList}\small\item\em BCC lattice Burgers vector for the material investigated (m). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_af8b0c154ec38c699804c492ea91cc488}\label{classUserSettings_af8b0c154ec38c699804c492ea91cc488}} 
+double \mbox{\hyperlink{classUserSettings_af8b0c154ec38c699804c492ea91cc488}{mv\+Burgers\+Vector\+FCC}}
+\begin{DoxyCompactList}\small\item\em FCC lattice Burgers vector for the material investigated (m). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_af71f4e96d82818765f0b08cdaee0e257}\label{classUserSettings_af71f4e96d82818765f0b08cdaee0e257}} 
+double \mbox{\hyperlink{classUserSettings_af71f4e96d82818765f0b08cdaee0e257}{mv\+Burgers\+Vector\+HCP}}
+\begin{DoxyCompactList}\small\item\em HCP lattice Burgers vector for the material investigated (m). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a9d5cfabdc17f142399d58fc59a223dcd}\label{classUserSettings_a9d5cfabdc17f142399d58fc59a223dcd}} 
+double \mbox{\hyperlink{classUserSettings_a9d5cfabdc17f142399d58fc59a223dcd}{mv\+Time\+Range\+To\+Write\+Output}}
+\begin{DoxyCompactList}\small\item\em Time range to write output (s). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_afb47f72a571ccc12e5c59af1596f08bb}\label{classUserSettings_afb47f72a571ccc12e5c59af1596f08bb}} 
+double \mbox{\hyperlink{classUserSettings_afb47f72a571ccc12e5c59af1596f08bb}{mv\+Solute\+Diffusivity\+Activation\+Energy}}
+\begin{DoxyCompactList}\small\item\em Activation energy for solute diffusion (J/mol). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_aed83bc3488115de787d71c2e7e14dda3}\label{classUserSettings_aed83bc3488115de787d71c2e7e14dda3}} 
+double \mbox{\hyperlink{classUserSettings_aed83bc3488115de787d71c2e7e14dda3}{mv\+Solute\+Diffusivity\+Pre\+Factor}}
+\begin{DoxyCompactList}\small\item\em Pre-\/exponential factor for solute diffusion (J/mol). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a7af67fd627ab396d47b9d3f8864c7327}\label{classUserSettings_a7af67fd627ab396d47b9d3f8864c7327}} 
+double \mbox{\hyperlink{classUserSettings_a7af67fd627ab396d47b9d3f8864c7327}{mv\+Grain\+Boundary\+Mobility\+Pro\+Exponential}}
+\begin{DoxyCompactList}\small\item\em Pre-\/exponential factor for grain boundary migration (J/mol). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_ad1bd0b745308109af7c17940638be596}\label{classUserSettings_ad1bd0b745308109af7c17940638be596}} 
+double \mbox{\hyperlink{classUserSettings_ad1bd0b745308109af7c17940638be596}{mv\+Grain\+Boundary\+Mobility\+Activation\+Energy}}
+\begin{DoxyCompactList}\small\item\em Activation energy for grain boundary migration (J/mol). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a9d8e7501a02b36a33cde019ea7b47e85}\label{classUserSettings_a9d8e7501a02b36a33cde019ea7b47e85}} 
+double \mbox{\hyperlink{classUserSettings_a9d8e7501a02b36a33cde019ea7b47e85}{mv\+Grain\+Boundary\+Energy}}
+\begin{DoxyCompactList}\small\item\em Grain boundary energy density (J/m$^\wedge$2). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a5cf0e7502cc1a951eb7570304b23c69d}\label{classUserSettings_a5cf0e7502cc1a951eb7570304b23c69d}} 
+double \mbox{\hyperlink{classUserSettings_a5cf0e7502cc1a951eb7570304b23c69d}{mv\+Phase\+Boundary\+Mobility\+Pro\+Exponential}}
+\begin{DoxyCompactList}\small\item\em Pre-\/exponential factor for phase boundary migration. \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_a950f8260149eba0407f376614e4a4243}\label{classUserSettings_a950f8260149eba0407f376614e4a4243}} 
+double \mbox{\hyperlink{classUserSettings_a950f8260149eba0407f376614e4a4243}{mv\+Phase\+Boundary\+Mobility\+Activation\+Energy}}
+\begin{DoxyCompactList}\small\item\em Activation energy for phase boundary migration (J/mol). \end{DoxyCompactList}\item 
+\mbox{\Hypertarget{classUserSettings_ad54e334d2640a5029abd7004808e0c43}\label{classUserSettings_ad54e334d2640a5029abd7004808e0c43}} 
+double \mbox{\hyperlink{classUserSettings_ad54e334d2640a5029abd7004808e0c43}{mv\+Phase\+Boundary\+Energy}}
+\begin{DoxyCompactList}\small\item\em Phase boundary energy density (J/m$^\wedge$2). \end{DoxyCompactList}\end{DoxyCompactItemize}
+
+
+\doxysubsection{Detailed Description}
+Handles all the simulation parameters and sets them according to the input file and/or default values. 
+
+\doxysubsection{Constructor \& Destructor Documentation}
+\mbox{\Hypertarget{classUserSettings_a33ae7f24f3fd854cd3d447bdca8810bd}\label{classUserSettings_a33ae7f24f3fd854cd3d447bdca8810bd}} 
+\index{UserSettings@{UserSettings}!UserSettings@{UserSettings}}
+\index{UserSettings@{UserSettings}!UserSettings@{UserSettings}}
+\doxysubsubsection{\texorpdfstring{UserSettings()}{UserSettings()}}
+{\footnotesize\ttfamily User\+Settings\+::\+User\+Settings (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{input\+File }\end{DoxyParamCaption})}
+
+
+
+Constructor that initializes settings from the input file. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em input\+File} & Path to the input file containing simulation parameters. \\
+\hline
+\end{DoxyParams}
+
+
+\doxysubsection{Member Function Documentation}
+\mbox{\Hypertarget{classUserSettings_a923df105e3c4dcd4cb0af92efeed40ab}\label{classUserSettings_a923df105e3c4dcd4cb0af92efeed40ab}} 
+\index{UserSettings@{UserSettings}!getOutputFolderPath@{getOutputFolderPath}}
+\index{getOutputFolderPath@{getOutputFolderPath}!UserSettings@{UserSettings}}
+\doxysubsubsection{\texorpdfstring{getOutputFolderPath()}{getOutputFolderPath()}}
+{\footnotesize\ttfamily std\+::string User\+Settings\+::get\+Output\+Folder\+Path (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the path to the folder where simulation outputs are stored. 
+
+\begin{DoxyReturn}{Returns}
+Path to the output folder. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classUserSettings_a85c02aab7e986dacf4a5011388371fe2}\label{classUserSettings_a85c02aab7e986dacf4a5011388371fe2}} 
+\index{UserSettings@{UserSettings}!getStartFileName@{getStartFileName}}
+\index{getStartFileName@{getStartFileName}!UserSettings@{UserSettings}}
+\doxysubsubsection{\texorpdfstring{getStartFileName()}{getStartFileName()}}
+{\footnotesize\ttfamily std\+::string User\+Settings\+::get\+Start\+File\+Name (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the path to the input (starting) microstructure file. 
+
+\begin{DoxyReturn}{Returns}
+Path to the input microstructure file. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classUserSettings_a1808cce60452ce57bef5b88b93328c8f}\label{classUserSettings_a1808cce60452ce57bef5b88b93328c8f}} 
+\index{UserSettings@{UserSettings}!getThermodynamicDataFile@{getThermodynamicDataFile}}
+\index{getThermodynamicDataFile@{getThermodynamicDataFile}!UserSettings@{UserSettings}}
+\doxysubsubsection{\texorpdfstring{getThermodynamicDataFile()}{getThermodynamicDataFile()}}
+{\footnotesize\ttfamily std\+::string User\+Settings\+::get\+Thermodynamic\+Data\+File (\begin{DoxyParamCaption}{ }\end{DoxyParamCaption}) const\hspace{0.3cm}{\ttfamily [inline]}}
+
+
+
+Returns the path to the file containing thermodynamic data. 
+
+\begin{DoxyReturn}{Returns}
+Path to the thermodynamic data file. 
+\end{DoxyReturn}
+\mbox{\Hypertarget{classUserSettings_ad89e61f95c2626db8e2a0d5d2ab5eb4a}\label{classUserSettings_ad89e61f95c2626db8e2a0d5d2ab5eb4a}} 
+\index{UserSettings@{UserSettings}!writeToFile@{writeToFile}}
+\index{writeToFile@{writeToFile}!UserSettings@{UserSettings}}
+\doxysubsubsection{\texorpdfstring{writeToFile()}{writeToFile()}}
+{\footnotesize\ttfamily void User\+Settings\+::write\+To\+File (\begin{DoxyParamCaption}\item[{const std\+::string \&}]{output\+File }\end{DoxyParamCaption})}
+
+
+
+Writes the settings to the output file, including default values. 
+
+
+\begin{DoxyParams}{Parameters}
+{\em output\+File} & Path to the output file where settings will be saved. \\
+\hline
+\end{DoxyParams}
+
+
+The documentation for this class was generated from the following files\+:\begin{DoxyCompactItemize}
+\item 
+src/settings.\+h\item 
+src/settings.\+cpp\end{DoxyCompactItemize}

@@ -44,6 +44,6 @@ PhaseBoundaryMobilityActivationEnergy=140000
 BurgersVectorBCC=2.5e-10
 BurgersVectorFCC=2.5e-10
 BurgersVectorHCP=0
-TimeRangeToWriteOutput=1
+TimeRangeToWriteOutput=2
 SoluteDiffusivityPreFactor=0.002
 SoluteDiffusivityActivationEnergy=125000

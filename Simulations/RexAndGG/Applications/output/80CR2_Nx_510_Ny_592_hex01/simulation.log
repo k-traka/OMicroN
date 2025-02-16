@@ -1,0 +1,49 @@
+
+
+
+
+
+arguments: app
+Current dir: /home/konstantina/repositories/OMicroN-all/Simulations/RexAndGG/Applications
+File verbosity level: 9
+date       time         ( uptime  )    v| 
+2025-02-16 15:58:15.853 (   0.008s) INFO| Logging to '/home/konstantina/repositories/OMicroN-all/Simulations/RexAndGG/Applications/output/80CR2_Nx_510_Ny_592_hex01/simulation.log', mode: 'a', verbosity: 9
+2025-02-16 15:58:15.853 (   0.008s) INFO| Initializing microstructure for simulation
+2025-02-16 15:58:15.853 (   0.008s) INFO| I will read microstructure file = /home/konstantina/repositories/OMicroN-all/Simulations/RexAndGG/Applications/input/80CR2_Nx_510_Ny_592_hex01.txt
+2025-02-16 15:58:15.853 (   0.008s) INFO| I will read thermodynamic data from file = 
+2025-02-16 15:58:15.853 (   0.008s) INFO| I will write all simulation outputs in = /home/konstantina/repositories/OMicroN-all/Simulations/RexAndGG/Applications/output/80CR2_Nx_510_Ny_592_hex01
+2025-02-16 15:58:15.853 (   0.008s) INFO| Setting time step from user inputs equal to 1
+2025-02-16 15:58:15.853 (   0.008s) INFO| Initializing Cells
+2025-02-16 15:58:15.853 (   0.008s) INFO| Grid of: nx=510, ny=592, nz=1, dx=1e-07
+2025-02-16 15:58:15.866 (   0.020s) INFO| NCellsToRead 301920
+2025-02-16 15:58:15.866 (   0.020s) INFO| Reading 301920 data points z 1 expected 1637720608 data points from /home/konstantina/repositories/OMicroN-all/Simulations/RexAndGG/Applications/input/80CR2_Nx_510_Ny_592_hex01.txt
+2025-02-16 15:58:15.866 (   0.020s) INFO| All cells (based on orientation) participate in the simulation
+2025-02-16 15:58:15.866 (   0.020s) INFO| Line: 0, Index: 0, Orientation ID: 0
+2025-02-16 15:58:15.866 (   0.020s) INFO| ea phi1: 352.432648 Phi: 117.631104 phi2 49.005653
+2025-02-16 15:58:16.089 (   0.244s) INFO| Finished reading microstructure
+2025-02-16 15:58:19.660 (   3.815s) INFO| Finished checking MaxMisorientationError, equal to 0.0969133 and you have set tol 0.4
+2025-02-16 15:58:19.660 (   3.815s) INFO| Finished checking orientation map, you have non Indexed 29 and cells with non indexed neighbours non Indexed 117
+2025-02-16 15:58:19.660 (   3.815s) INFO| Setting state variables of full-field simulations, i.e. GG, Rex, Or some simulation types for carbon long range Diffusion
+2025-02-16 15:58:19.660 (   3.815s) INFO| For grid type 1 and parameter C 0.7 your boundary migration rate now matches the theory, after scaling by a factor of 0.47 your mobility/boundary energy input
+2025-02-16 15:58:19.661 (   3.816s) INFO| bcells 2200
+Stack trace:
+18      0x5e705e417f25 ../../../OMicroN-master/bin/OMicroN(+0xaf25) [0x5e705e417f25]
+17      0x7abe63a29e40 __libc_start_main + 128
+16      0x7abe63a29d90 /lib/x86_64-linux-gnu/libc.so.6(+0x29d90) [0x7abe63a29d90]
+15      0x5e705e42128c ../../../OMicroN-master/bin/OMicroN(+0x1428c) [0x5e705e42128c]
+14      0x5e705e418343 ../../../OMicroN-master/bin/OMicroN(+0xb343) [0x5e705e418343]
+13      0x5e705e418418 ../../../OMicroN-master/bin/OMicroN(+0xb418) [0x5e705e418418]
+12      0x5e705e41a7cd ../../../OMicroN-master/bin/OMicroN(+0xd7cd) [0x5e705e41a7cd]
+11      0x5e705e4232b6 ../../../OMicroN-master/bin/OMicroN(+0x162b6) [0x5e705e4232b6]
+10      0x5e705e42c7b2 ../../../OMicroN-master/bin/OMicroN(+0x1f7b2) [0x5e705e42c7b2]
+9       0x5e705e429b5a ../../../OMicroN-master/bin/OMicroN(+0x1cb5a) [0x5e705e429b5a]
+8       0x5e705e4b8498 ../../../OMicroN-master/bin/OMicroN(+0xab498) [0x5e705e4b8498]
+7       0x5e705e4b9fce ../../../OMicroN-master/bin/OMicroN(+0xacfce) [0x5e705e4b9fce]
+6       0x5e705e41c5d3 ../../../OMicroN-master/bin/OMicroN(+0xf5d3) [0x5e705e41c5d3]
+5       0x5e705e41d263 ../../../OMicroN-master/bin/OMicroN(+0x10263) [0x5e705e41d263]
+4       0x5e705e41dc90 ../../../OMicroN-master/bin/OMicroN(+0x10c90) [0x5e705e41dc90]
+3       0x5e705e41e5bc ../../../OMicroN-master/bin/OMicroN(+0x115bc) [0x5e705e41e5bc]
+2       0x5e705e41c93b ../../../OMicroN-master/bin/OMicroN(+0xf93b) [0x5e705e41c93b]
+1       0x5e705e41d62e ../../../OMicroN-master/bin/OMicroN(+0x1062e) [0x5e705e41d62e]
+0       0x7abe63a42520 /lib/x86_64-linux-gnu/libc.so.6(+0x42520) [0x7abe63a42520]
+2025-02-16 15:58:23.219 (   7.374s) FATL| Signal: SIGINT

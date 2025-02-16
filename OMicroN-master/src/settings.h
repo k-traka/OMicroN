@@ -122,6 +122,40 @@ public:
      */
     int mvHasSoluteDiffusion;
 
+
+    /**
+     * @brief Flag indicating whether solidification and solute redistribution (e.g., diffusion, partitioning, trapping) should be simulated.
+     */
+    int mvIsSolidification;
+
+    /**
+     * @brief Flag indicating whether deformation should be simulated.
+     */
+    int mvIsDeformation;
+    /**
+     * @brief Flag indicating whether solidification does not consider surface energy
+     */
+    int mvUseBoundaryEnergyIncrement;
+
+    /**
+     * @brief Flag indicating whether solidification does not consider anisotropic surface energy
+     */
+    int mvUseAnisotropicBoundaryEnergy;
+    /**
+     * @brief Flag indicating whether the interstitial redistribution and defect trapping is hydrogen (otherwise it is carbon) 
+     *      */
+
+int mvIsHydrogen;
+    /**
+     * @brief Flag indicating whether the interstitial redistribution and defect trapping is hydrogen refers to charging
+     *      */
+
+int mvIsHydrogenSource;
+    /**
+     * @brief Flag indicating whether solidification considers Solute Drag
+     *      */
+    int mvUseSoluteDrag;
+
     /**
      * @brief Flag indicating whether interface migration in the same phase (e.g., recrystallization and grain growth) should be simulated.
      */
@@ -131,6 +165,11 @@ public:
      * @brief Misorientation below which any misorientation between pixels is considered noise and no orientation gradient is considered (e.g., 0.4 degrees).
      */
     float mvLowerMisorientationCutOff;
+
+    /**
+     * @brief A cell is not considered as an Icell if it has smaller misorientation from its neigbours than  (i.e. it CANNOT grow/be consumed) but may still consider as misoriented from its neighbours (i.e. if  mvLowerMisorientationCutOff< mis < mvLowerMisorientationForLAGB then the cell is deformed but it moves so slowly so it is not iterated for being itself consumed.
+     */
+    float mvLowerMisorientationForLAGB;
 
     /**
      * @brief Misorientation above which a high-angle grain boundary is considered. Energy density and mobility are constant above this value (e.g., 15 degrees).
@@ -152,6 +191,10 @@ public:
      */
     std::string mvThermodynamicsDataFilename;
 
+    /**
+     * @brief Flag indicating whether the input microstructure file also has Ori Id 
+     */
+    int mvReadOriId;
     /**
      * @brief Flag indicating whether the simulation involves microstructure evolution (considering imported state variables) or code testing.
      */
@@ -176,7 +219,10 @@ public:
      * @brief Parameter C that calibrates the driving force for grain growth and recrystallization. Accepted values are 0.5, 0.7, 1.0.
      */
     float mvRexGGParameterC;
-
+    /**
+     * @brief Flag indicating that Rex or GG will be simulated in faster way (which may have error - though negligible)
+     */
+    int mvFasterRexAndGG;
     /**
      * @brief Flag indicating whether the dislocation density provided by the input file should be used in the simulation. Turn off means calculating local dislocation density based on orientation gradients.
      */
@@ -251,6 +297,15 @@ public:
      * @brief Concentration of solute (carbon or other) that redistributes through the simulation (atomic fraction).
      */
     double mvAverageCarbon;
+
+    /**
+     * @brief Concentration of solute (carbon or other) that redistributes through the simulation (atomic fraction).
+     */
+    double mvAverageCopper;
+        /**
+     * @brief Concentration of solute (carbon or other) that redistributes through the simulation (atomic fraction).
+     */
+    double mvAverageTin;
 
     /**
      * @brief BCC lattice Burgers vector for the material investigated (m).

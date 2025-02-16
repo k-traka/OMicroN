@@ -14,7 +14,7 @@
 
 
 
-ThermChemKin::ThermChemKin(double userStartTemperature, double userXCo,double userGB_Mo,double userGB_Qg,double userGB_E,double userPB_Mo,double userPB_Qg,double userPB_E, double user_DiffPreFactor, double user_DiffQg) {
+ThermChemKin::ThermChemKin(double userStartTemperature, double userXCo,double userGB_Mo,double userGB_Qg,double userGB_E,double userPB_Mo,double userPB_Qg,double userPB_E, double user_DiffPreFactor, double user_DiffQg, double userXCu, double userXSn) {
     mvT = userStartTemperature; // only in initialization mvT is this temperature. Later it is set per simulation step here
     mvMuCEqParamA = -90885;
     mvMuCEqParamB = 61;
@@ -22,6 +22,8 @@ ThermChemKin::ThermChemKin(double userStartTemperature, double userXCo,double us
     mvMuCEqParamD = -5.7;
 
     mvXC0 = userXCo; // acerage carbon concentration (at. fraction)
+mvXCu = userXCu;
+mvXSn = userXSn;
 
     mvGrainBoundaryM0 = userGB_Mo;
     mvGrainBoundaryQg = userGB_Qg;
@@ -337,6 +339,9 @@ double ThermChemKin::GetMuSubstitutionalInFCC(const double xC) const {
     return GetValueGibbs_Clamped(xC, mvpMuSubstitutionalFCC_TableXC);
 }
 
+
+
+
 /** @brief Returns the linearly interpolated value equilibrium (local partitioning) carbon concentration in FCC given the total interphase carbon concentration
      *  @param xCBCCNow the current (before further partitioning) carbon concentration in adjacent BCC
      *  @param xCFCCNow the current (before further partitioning) carbon concentration in adjacent FCC
@@ -398,4 +403,15 @@ double ThermChemKin::GetValueGibbs_Clamped(const double X, const double* Y) cons
     } else {
         return Y[li] + (Y[li + 1] - Y[li]) * (X - mvXCminInChemTables - li * mvXCStepForChemTables) / mvXCStepForChemTables;
     }
+}
+
+
+/** @brief Returns the equilibrium concentration at liquid based on partitioning coefficient as a function of carbon
+     *  @param xSolute the current (before further partitioning) solute concentration at interface
+     *  @param xCarbon the current (before further partitioning) carbon concentration at interface
+     *  @return k * xSolute
+ */
+double ThermChemKin::GetEqSoluteAtLiquidAtThisInterface(const double xSolute, const double xCarbon) const {
+    double k = 1.1;
+    return k * xSolute;
 }

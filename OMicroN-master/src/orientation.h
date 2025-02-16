@@ -183,6 +183,14 @@ public:
     int addOriAndReturnId(const Eigen::Vector3f &ea);
 
     /**
+     * @brief Adds a randomly generated orientation and returns its ID.
+     *
+     * @return ID of the added orientation.
+     */
+    int addRandomOriAndReturnId();
+
+
+    /**
      * @brief Calculates the misorientation between two quaternions.
      *
      * @param q0 First quaternion.
@@ -217,6 +225,22 @@ public:
      * @return Misorientation angle.
      */
     float CalcMisorientationFromEulerAngles(const Eigen::Vector3f &ea1, const Eigen::Vector3f &ea2) const;
+    /**
+     * @brief Helper function: returns rotation matrix given their Euler angles.
+     *
+     * @param phi1 Euler angle phi1 (Bunge ZXZ)
+     * @param Phi Euler angle Phi (Bunge ZXZ)
+     * @param phi2 Euler angle Phi (Bunge ZXZ)
+
+     * @return Rotation matrix
+     */
+    std::vector<std::vector<float>> EulerToRotationMatrix(float phi1, float PHI, float phi2);
+// Function to apply a specified symmetry operation to a crystal direction
+
+std::vector<float> ApplyCubicSymmetry(const std::vector<float>& crystalDirection, int symmetryIndex);
+
+Eigen::Matrix3d GetOriInRotationMatrix(int id);
+
 };
 
 #endif // ORIENTATION_H

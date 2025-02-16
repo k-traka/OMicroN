@@ -60,7 +60,7 @@ private:
     int mvNNeighboursMatter; ///< Total number of material elements that we care about depending on grid and application, e.g. if fulldiffusion we care about only nearest, if full-field grain growth we consider only acceptable grid settings (because of GB energy anisotropy)
 
     int mvpAllNeighbours[26]; ///< Relative indices (1D array) of all (first, second, and third) neighbours
-
+float *mvpVonMisesStress = nullptr;
 
     /// @name The pointers to most basid (and always initialized during simulation) state variables of material elements information
     /// @{
@@ -82,10 +82,12 @@ private:
     /// @}
 
 
+    Eigen::VectorXd* mvpXCu  = nullptr;        ///< Copper concentration per cell
+    Eigen::VectorXd* mvpXSn  = nullptr;        ///< Tin concentration per cell
 
     /// @name Carbon diffusion due to interface partitioning. Also carbon segragation
-    double *mvpKappaFactorForCTrappedDefects = nullptr;
-    double *mvpDiffusivityC_Ratio = nullptr;    ///< ratio of actual concentration depenent diffusivity (Agren) to the max carbon diffusivity. Written as ratio to directly go in the matrix A when solving Ax=b.
+    double *mvpKappaFactorForSoluteTrappedDefects = nullptr;
+    double *mvpDiffusivitySolute_Ratio = nullptr;    ///< ratio of actual concentration depenent diffusivity (Agren) to the max carbon diffusivity. Written as ratio to directly go in the matrix A when solving Ax=b.
 
     int *mvpOneOfTheNeighboursGrowingInto = nullptr; ///< This is the material element's (or one of the material elements) growing to the material element with the orientation of grain mvpIdToGive. It is useful only for rexInitiation to take info from cell or processing
      float *mvpConsumptionRate = nullptr;           ///< A cell's re-orientation rate into the orientation of one neighbours
@@ -123,6 +125,8 @@ private:
     void InitDiffusivitiesVector(void);
     void InitEBSDRelatedStuff();
     void InitStateVariablesRelatedToRexAndGG();
+    void InitImpurities();
+
     /// @}
 
     /// @name "Check" functions
@@ -142,7 +146,7 @@ private:
  * @param IsPartitioningHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
-    Eigen::VectorXd NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *th_p, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere);
+Eigen::VectorXd NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *TCK_p, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere,bool UseChemPot, int highSolPhase);
   
   /** @brief Performs one computation of the system Ax=b for Traka's diffusion / partitioning / trapping to defects
  * Traka, 2024, Acta Materialia.
@@ -155,12 +159,24 @@ private:
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-    void SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *th_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere);
+    void SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *th_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int HighSolPhase);
 
     ThermChemKin* mvpTCK; ///< Pointer to thermodynamic data.
 
 bool IsTheNumberFinite(double numberToCheck);
    
+     /** @brief Performs one computation of the system Ax=b for Traka's diffusion / partitioning / trapping to defects
+ * Traka, 2024, Acta Materialia. Here it is for solidification.
+ *
+ * @param x the solute concentrations vector which remains here as such
+ * @param TCK_p pointer to ThermChemKin instance
+ * @param b the solute concentrations vector which here changes according to the reduction of Ax
+ * @param p_dotAp dot product of new b
+ * @param IsPartitioningHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
+ * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
+ */
+void SystemATimesXSolidification(const Eigen::VectorXd &x, ThermChemKin *TCK_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere);
+
 
 
 public:
@@ -173,12 +189,13 @@ public:
         : mvN(-1)
     {
     }
-    StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSoluteDiffusion, bool IncludeRexAndGG, bool AllowIntMigration, bool initXCEqInt, bool initXCEqDef);
+    StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSoluteDiffusion, bool IncludeRexAndGG, bool AllowIntMigration, bool initXCEqInt, bool initXCEqDef, bool isSolidification, bool isDeformation);
     ~StateVars(void);
     /// @}
 
    
-
+void SetVonMisesStress(int index, float stress){mvpVonMisesStress[index] = stress;};
+float GetVonMisesStress(int index){return mvpVonMisesStress[index];};
 
 
      /// @name Functions for setting state variables of cells
@@ -230,6 +247,11 @@ bool IsCellHCP(int index)
  return (mvpLatticeId[index] == 2);
      }
 
+bool IsCellLiquid(int index)
+{
+ return (mvpLatticeId[index] == 3);
+     }
+
 
   
     /// @name Functions for retrieving lattice name based on lattice Id stored in CA
@@ -246,7 +268,10 @@ bool IsLatticeIdBCC(int latticeId)
 {
  return (latticeId == 2);
      }
-
+     bool IsLatticeIdLiquid(int latticeId)
+{
+ return (latticeId == 3);
+     }
 
 
     /// @name Functions for retrieving geometry data
@@ -289,10 +314,10 @@ bool IsLatticeIdBCC(int latticeId)
      */
 
     double GetXCOfCell(int index) const { return (mvpXC != nullptr) ? (*mvpXC)[index] : -1; }
-    double GetKappaFactorForCTrappedInCell(int index) const { return (mvpKappaFactorForCTrappedDefects != nullptr) ? mvpKappaFactorForCTrappedDefects[index] : 0; }
+    double GetKappaFactorForCTrappedInCell(int index) const { return (mvpKappaFactorForSoluteTrappedDefects != nullptr) ? mvpKappaFactorForSoluteTrappedDefects[index] : 0; }
     double GetXCTrappedInCell(int index) const { return (mvpXCTrapped != nullptr) ? (*mvpXCTrapped)[index] : 0; }
-    void ConvertTotCellConcentrationsInCarbonPerIron() const {for (int i = 0; i < mvN; i++) (*mvpXC)[i]/=(1.-(*mvpXC)[i]);}
-    void ConvertTotCellConcentrationsInAtFraction() const {for (int i = 0; i < mvN; i++) (*mvpXC)[i]/=(1.+(*mvpXC)[i]);}
+    void ConvertTotCellConcentrationsInCarbonPerIron() const;
+    void ConvertTotCellConcentrationsInAtFraction() const;
 
     /** @brief Returns the value of mvpBoundaryCell. This value is associated to the position
      * of the cell on the grid. If it belongs to the boundary, it assumes a value > 0.
@@ -326,10 +351,19 @@ bool IsLatticeIdBCC(int latticeId)
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-    void SoluteDiffusionStep(ThermChemKin *th_p, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere);
+void SoluteDiffusionStep(ThermChemKin *TCK_p, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int ElementNumber, int LatticeOfHighSol);
     void PutBackCarbonTrappedAndCalculateNewCarbonFreeCarbonTrapped();
     void SetCarbonTrappedAndCarbonFreeForGivenXcTot();
     /// @}
+
+    // Node-Cell Connectivity
+    std::vector<int> getNodesForCell(int cellIndex) const;
+
+    // Node Position
+    Eigen::Vector3f getNodePosition(int nodeIndex) const;
+
+    // FEM-related methods
+    Eigen::MatrixXf computeElementStiffness(int cellIndex) const;
 
 
     friend class Microstructure;

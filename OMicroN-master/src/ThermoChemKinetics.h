@@ -47,7 +47,7 @@ public:
      * @param user_DiffPreFactor Pre-exponential factor for solute diffusion.
      * @param user_DiffQg Activation energy for solute diffusion (J/mol).
      */
-    ThermChemKin(double userXCo, double userStartTemperature, double userGB_Mo, double userGB_Qg, double userGB_E, double userPB_Mo, double userPB_Qg, double userPB_E, double user_DiffPreFactor, double user_DiffQg);
+    ThermChemKin(double userXCo, double userStartTemperature, double userGB_Mo, double userGB_Qg, double userGB_E, double userPB_Mo, double userPB_Qg, double userPB_E, double user_DiffPreFactor, double user_DiffQg, double userXCu, double userXSn);
 
     /// Destructor
     ~ThermChemKin();
@@ -251,6 +251,16 @@ public:
      */
     double AusteniteMolarVolume() const { return 0.0000073713716; }
 
+
+/** @brief Returns the equilibrium concentration at liquid based on partitioning coefficient as a function of carbon
+     *  @param xSolute the current (before further partitioning) solute concentration at interface
+     *  @param xCarbon the current (before further partitioning) carbon concentration at interface
+     *  @return k * xSolute
+ */
+double GetEqSoluteAtLiquidAtThisInterface(const double xSolute, const double xCarbon) const;
+ double GetAverageCopper(){return mvXCu;}
+ double GetAverageTin(){return mvXSn;}
+
 private:
     /**
      * @brief Temperature for the simulation step.
@@ -278,6 +288,22 @@ private:
      * expressed as an atomic fraction.
      */
     double mvXC0;
+
+    /**
+     * @brief Average copper concentration (atomic fraction).
+     *
+     * This variable represents the average copper concentration in the material,
+     * expressed as an atomic fraction.
+     */
+    double mvXCu;
+
+        /**
+     * @brief Average tin concentration (atomic fraction).
+     *
+     * This variable represents the average tin concentration in the material,
+     * expressed as an atomic fraction.
+     */
+    double mvXSn;
 
     /**
      * @brief Activation energy for solute diffusion (J/mol).

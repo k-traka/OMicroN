@@ -24,7 +24,13 @@ void UserSettings::setDefaultValues() {
     mvDx = 1.0;
     mvGridType = 0;
     mvHasSoluteDiffusion = 0;
+    mvIsSolidification = 0;
+    mvIsDeformation = 0;
+    mvUseSoluteDrag = 0;
+    mvUseBoundaryEnergyIncrement = 0;
+    mvUseAnisotropicBoundaryEnergy = 0;
     mvIsRexAndGG = 1;
+    mvLowerMisorientationForLAGB = 2.0;
     mvLowerMisorientationCutOff = 0.3;
     mvHAGB = 15.;
     mvIsTestRVE = 0;
@@ -32,6 +38,7 @@ void UserSettings::setDefaultValues() {
     mvAllowPeriodicBoundConditions = 1;
     mvMinimumCI = 0.1;
     mvRexGGParameterC = 0.7;
+    mvFasterRexAndGG = 0;
     mvReadDislocationDensity = 0;
     mvIncludeCSL19FastGrowth = 0;
     mvIsOnlyAnOrientationSubsetConsidered = 0;
@@ -46,7 +53,12 @@ void UserSettings::setDefaultValues() {
     mvAllowInterfaceMovementDuringPartitioning = 0;
     mvConcentrationDependentDiffusivityInAustenite = 0;
     mvXcToUseConstantDiffusivityAgrenInAustenite = 0.0;
+    mvReadOriId = 0;
+    mvIsHydrogen = 0;
+    mvIsHydrogenSource = 0;
     mvAverageCarbon = 0.0;
+    mvAverageCopper = 0.0;
+    mvAverageTin = 0.0;
     mvGrainBoundaryEnergy = 0.0;
     mvPhaseBoundaryEnergy = 0.0;
     mvGrainBoundaryMobilityProExponential = 0.0;
@@ -80,16 +92,24 @@ void UserSettings::writeToFile(const std::string& outputFileName) {
     out << "GridType=" << mvGridType << std::endl;
     out << "IsRexAndGG=" << mvIsRexAndGG << std::endl;
     out << "HasSoluteDiffusion=" << mvHasSoluteDiffusion << std::endl;
+    out << "IsSolidification=" << mvIsSolidification << std::endl;
+    out << "IsDeformation=" << mvIsDeformation << std::endl;
+    out << "UseSoluteDrag=" << mvUseSoluteDrag << std::endl;
+    out << "UseBoundaryEnergyIncrement=" << mvUseBoundaryEnergyIncrement << std::endl;
+    out << "UseAnisotropicBoundaryEnergy=" << mvUseAnisotropicBoundaryEnergy << std::endl;
     out << "LowerMisorientationCutOff=" << mvLowerMisorientationCutOff << std::endl;
+    out << "LowerMisorientationForLAGB=" << mvLowerMisorientationForLAGB << std::endl;
     out << "HAGB=" << mvHAGB << std::endl;
     out << "StartFileName=" << mvStartFileName << std::endl;
     out << "ThermodynamicsDataFilename=" << mvThermodynamicsDataFilename << std::endl;
     out << "OutputFolderPath=" << mvOutputFolderPath << std::endl;
     out << "IsTestRVE=" << mvIsTestRVE << std::endl;
+    out << "ReadOriId=" << mvReadOriId << std::endl;
     out << "TestVonNeumannInSquare=" << mvTestVonNeumannInSquare << std::endl;
     out << "AllowPeriodicBoundConditions=" << mvAllowPeriodicBoundConditions << std::endl;
     out << "MinimumCI=" << mvMinimumCI << std::endl;
     out << "RexGGParameterC=" << mvRexGGParameterC << std::endl;
+    out << "FasterRexAndGG=" << mvFasterRexAndGG << std::endl;
     out << "ReadDislocationDensity=" << mvReadDislocationDensity << std::endl;
     out << "IncludeCSL19FastGrowth=" << mvIncludeCSL19FastGrowth << std::endl;
     out << "IsOnlyAnOrientationSubsetConsidered=" << mvIsOnlyAnOrientationSubsetConsidered << std::endl;
@@ -104,7 +124,11 @@ void UserSettings::writeToFile(const std::string& outputFileName) {
     out << "AllowInterfaceMovementDuringPartitioning=" << mvAllowInterfaceMovementDuringPartitioning << std::endl;
     out << "ConcentrationDependentDiffusivityInAustenite=" << mvConcentrationDependentDiffusivityInAustenite << std::endl;
     out << "XcToUseConstantDiffusivityAgrenInAustenite=" << mvXcToUseConstantDiffusivityAgrenInAustenite << std::endl;
+    out << "IsHydrogen=" << mvIsHydrogen << std::endl;
+    out << "IsHydrogenSource=" << mvIsHydrogenSource << std::endl;
     out << "AverageCarbon=" << mvAverageCarbon << std::endl;
+    out << "AverageCopper=" << mvAverageCopper << std::endl;
+    out << "AverageTin=" << mvAverageTin << std::endl;
     out << "GrainBoundaryEnergy=" << mvGrainBoundaryEnergy << std::endl;
     out << "PhaseBoundaryEnergy=" << mvPhaseBoundaryEnergy << std::endl;
     out << "GrainBoundaryMobilityProExponential=" << mvGrainBoundaryMobilityProExponential << std::endl;
@@ -131,16 +155,24 @@ void UserSettings::printParameters() {
     std::cout << "GridType=" << mvGridType << std::endl;
     std::cout << "IsRexAndGG=" << mvIsRexAndGG << std::endl;
     std::cout << "HasSoluteDiffusion=" << mvHasSoluteDiffusion << std::endl;
+    std::cout << "IsSolidification=" << mvIsSolidification << std::endl;
+    std::cout << "IsDeformation=" << mvIsDeformation << std::endl;
+    std::cout << "UseSoluteDrag=" << mvUseSoluteDrag << std::endl;
+    std::cout << "UseBoundaryEnergyIncrement=" << mvUseBoundaryEnergyIncrement << std::endl;
+    std::cout << "UseAnisotropicBoundaryEnergy=" << mvUseAnisotropicBoundaryEnergy << std::endl;
     std::cout << "LowerMisorientationCutOff=" << mvLowerMisorientationCutOff << std::endl;
+    std::cout << "LowerMisorientationForLAGB=" << mvLowerMisorientationForLAGB << std::endl;
     std::cout << "HAGB=" << mvHAGB << std::endl;
     std::cout << "StartFileName=" << mvStartFileName << std::endl;
     std::cout << "ThermodynamicsDataFilename=" << mvThermodynamicsDataFilename << std::endl;
     std::cout << "OutputFolderPath=" << mvOutputFolderPath << std::endl;
+    std::cout << "ReadOriId=" << mvReadOriId << std::endl;
     std::cout << "IsTestRVE=" << mvIsTestRVE << std::endl;
     std::cout << "TestVonNeumannInSquare=" << mvTestVonNeumannInSquare << std::endl;
     std::cout << "AllowPeriodicBoundConditions=" << mvAllowPeriodicBoundConditions << std::endl;
     std::cout << "MinimumCI=" << mvMinimumCI << std::endl;
     std::cout << "RexGGParameterC=" << mvRexGGParameterC << std::endl;
+    std::cout << "FasterRexAndGG=" << mvFasterRexAndGG << std::endl;
     std::cout << "ReadDislocationDensity=" << mvReadDislocationDensity << std::endl;
     std::cout << "IncludeCSL19FastGrowth=" << mvIncludeCSL19FastGrowth << std::endl;
     std::cout << "IsOnlyAnOrientationSubsetConsidered=" << mvIsOnlyAnOrientationSubsetConsidered << std::endl;
@@ -155,7 +187,11 @@ void UserSettings::printParameters() {
     std::cout << "AllowInterfaceMovementDuringPartitioning=" << mvAllowInterfaceMovementDuringPartitioning << std::endl;
     std::cout << "ConcentrationDependentDiffusivityInAustenite=" << mvConcentrationDependentDiffusivityInAustenite << std::endl;
     std::cout << "XcToUseConstantDiffusivityAgrenInAustenite=" << mvXcToUseConstantDiffusivityAgrenInAustenite << std::endl;
+    std::cout << "IsHydrogen=" << mvIsHydrogen << std::endl;
+    std::cout << "mvIsHydrogenSource=" << mvIsHydrogenSource << std::endl;
     std::cout << "AverageCarbon=" << mvAverageCarbon << std::endl;
+    std::cout << "AverageCopper=" << mvAverageCopper << std::endl;
+    std::cout << "AverageTin=" << mvAverageTin << std::endl;
     std::cout << "GrainBoundaryEnergy=" << mvGrainBoundaryEnergy << std::endl;
     std::cout << "PhaseBoundaryEnergy=" << mvPhaseBoundaryEnergy << std::endl;
     std::cout << "GrainBoundaryMobilityProExponential=" << mvGrainBoundaryMobilityProExponential << std::endl;
@@ -207,8 +243,20 @@ void UserSettings::readFromFile(const std::string& inputFile) {
                 mvIsRexAndGG = std::stoi(value);
             } else if (key == "HasSoluteDiffusion") {
                 mvHasSoluteDiffusion = std::stoi(value);
+            } else if (key == "IsSolidification") {
+                mvIsSolidification = std::stoi(value);   
+            } else if (key == "IsDeformation") {
+                mvIsDeformation = std::stoi(value);  
+            } else if (key == "UseSoluteDrag") {
+                mvUseSoluteDrag = std::stoi(value);   
+            } else if (key == "UseBoundaryEnergyIncrement") {
+                mvUseBoundaryEnergyIncrement = std::stoi(value);
+            } else if (key == "UseAnisotropicBoundaryEnergy") {
+                mvUseAnisotropicBoundaryEnergy = std::stoi(value);   
             } else if (key == "LowerMisorientationCutOff") {
                 mvLowerMisorientationCutOff = std::stod(value);
+            } else if (key == "LowerMisorientationForLAGB") {
+                mvLowerMisorientationForLAGB = std::stod(value);
             } else if (key == "HAGB") {
                 mvHAGB = std::stod(value);
             } else if (key == "StartFileName") {
@@ -217,6 +265,8 @@ void UserSettings::readFromFile(const std::string& inputFile) {
                 mvThermodynamicsDataFilename = value;
             } else if (key == "OutputFolderPath") {
                 mvOutputFolderPath = value;
+            } else if (key == "ReadOriId") {
+                mvReadOriId = std::stoi(value);
             } else if (key == "IsTestRVE") {
                 mvIsTestRVE = std::stoi(value);
             } else if (key == "TestVonNeumannInSquare") {
@@ -227,6 +277,8 @@ void UserSettings::readFromFile(const std::string& inputFile) {
                 mvMinimumCI = std::stod(value);
             } else if (key == "RexGGParameterC") {
                 mvRexGGParameterC = std::stod(value);
+            } else if (key == "FasterRexAndGG") {
+                mvFasterRexAndGG = std::stoi(value);
             } else if (key == "ReadDislocationDensity") {
                 mvReadDislocationDensity = std::stoi(value);
             } else if (key == "IncludeCSL19FastGrowth") {
@@ -255,8 +307,16 @@ void UserSettings::readFromFile(const std::string& inputFile) {
                 mvConcentrationDependentDiffusivityInAustenite = std::stoi(value);
             } else if (key == "XcToUseConstantDiffusivityAgrenInAustenite") {
                 mvXcToUseConstantDiffusivityAgrenInAustenite = std::stod(value);
+            } else if (key == "IsHydrogen") {
+                mvIsHydrogen = std::stoi(value);
+            } else if (key == "IsHydrogenSource") {
+                mvIsHydrogenSource = std::stoi(value);
             } else if (key == "AverageCarbon") {
                 mvAverageCarbon = std::stod(value);
+            } else if (key == "AverageCopper") {
+                mvAverageCopper = std::stod(value);
+            } else if (key == "AverageTin") {
+                mvAverageTin = std::stod(value);
             } else if (key == "GrainBoundaryEnergy") {
                 mvGrainBoundaryEnergy = std::stod(value);
             } else if (key == "PhaseBoundaryEnergy") {

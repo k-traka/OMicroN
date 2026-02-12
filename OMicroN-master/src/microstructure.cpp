@@ -72,14 +72,15 @@ Microstructure::Microstructure(const UserSettings &userSettings)
         mvUserSettings.mvGridType, mvUserSettings.mvHasSoluteDiffusion, mvUserSettings.mvIsRexAndGG,
         mvUserSettings.mvAllowInterfaceMovementDuringPartitioning, !mvUserSettings.mvIsPartitioningHappeningInDiffusionStep,
         !mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep, mvUserSettings.mvIsSolidification, mvUserSettings.mvIsDeformation);
-
+    mvpStateVars->SetIfSoluteDiffusionKeepsConstantParentAtoms(mvUserSettings.mvConsiderConstantIronAtomsPerCell);
+    double AverageSoluteConcentration = (mvUserSettings.mvIsHydrogen) ? mvUserSettings.mvAverageHydrogen : mvUserSettings.mvAverageCarbon;
     // Initialize ThermChemKin
     mvpTCK = new ThermChemKin(
-        mvUserSettings.mvStartTemperature, mvUserSettings.mvAverageCarbon,
+        mvUserSettings.mvStartTemperature, AverageSoluteConcentration,
         mvUserSettings.mvGrainBoundaryMobilityProExponential, mvUserSettings.mvGrainBoundaryMobilityActivationEnergy,
         mvUserSettings.mvGrainBoundaryEnergy, mvUserSettings.mvPhaseBoundaryMobilityProExponential,
         mvUserSettings.mvPhaseBoundaryMobilityActivationEnergy, mvUserSettings.mvPhaseBoundaryEnergy,
-        mvUserSettings.mvSoluteDiffusivityPreFactor, mvUserSettings.mvSoluteDiffusivityActivationEnergy, mvUserSettings.mvAverageCopper, mvUserSettings.mvAverageTin);
+        mvUserSettings.mvSoluteDiffusivityPreFactor, mvUserSettings.mvSoluteDiffusivityActivationEnergy, mvUserSettings.mvAverageCopper, mvUserSettings.mvAverageTin, mvUserSettings.mvSolutePhasePartitioningCoefficient);
 
     if (mvUserSettings.mvIncludeCarbonInterphasePartitioning)
     {
@@ -96,6 +97,16 @@ Microstructure::Microstructure(const UserSettings &userSettings)
         mvpTCK->GetEqMuCarbonRelatedParametersABCD(&paramA, &paramB, &paramC, &paramD);
         LOG_F(INFO, "Parameters for XcEqBCC and XCEqFCC: A = %g, B = %g, C = %g, D = %g", paramA, paramB, paramC, paramD);
     }
+
+    if (mvUserSettings.mvUseTemperatureDataFilename) {
+        if (!mvUserSettings.mvTemperatureDataFilename.empty()){
+        TemperatureTimeProfile = ReadTemperatureProfile(mvUserSettings.mvTemperatureDataFilename);
+        LOG_F(INFO, "Succesfully read time temperature profile"); 
+        }
+        else 
+        LOG_F(ERROR, " you chose to read temperature time file but did not provide any file. Go to settings file, and either add a filename in parameter TemperatureDataFilename, or turn off the parameter UseTemperatureDataFilename ");
+    }
+    
         NcellsForCarbonPart = mvpStateVars->mvNNearest;
     NcellsForIntMig = mvpStateVars->mvNAll;
 
@@ -103,10 +114,24 @@ Microstructure::Microstructure(const UserSettings &userSettings)
     ReadMicrostructureFile(mvUserSettings.mvStartFileName);
     ValidateOrientationSettingsAndCheckNonIndexedPixels();
 
-    if (mvUserSettings.mvIsHydrogen && mvUserSettings.mvIsHydrogenSource) 
-    ChargeTheRVE();
-    
+   if (!mvUserSettings.mvIsHydrogen)
     SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralState();
+    else {
+    SetStateVariablesForHydrogen();
+            if (mvUserSettings.mvIsHydrogenSource) {
+    if (!mvUserSettings.mvUseHydrogenChargingDataFilename) ChargeTheRVE();
+    else {
+        if (!mvUserSettings.mvHydrogenChargingDataFilename.empty()){
+            InFlowHydrogenTimeProfile = ReadInflowRateProfile(mvUserSettings.mvHydrogenChargingDataFilename);
+        ChargeTheRVEFromInflowFile(InFlowHydrogenTimeProfile);
+        }
+        else{
+            LOG_F(ERROR, " you chose to read hydrogen charging file but did not provide any file. Go to settings file, and either add a filename in parameter HydrogenChargingDataFilename, or turn off the parameter UseHydrogenChargingDataFilename ");
+            exit(-1);
+        }
+    }
+            }
+    }
             LOG_F(INFO," initialized state variables");
     }
 
@@ -187,33 +212,186 @@ std::optional<int> Microstructure::findIndex(const std::vector<int> &vectorToChe
     }
     return std::nullopt;
 }
-
 void Microstructure::ReadMicrostructureFile(const std::string &startFileName) 
 {
-
-    // Check if the file ends with ".txt" or ".h5"
-    if (startFileName.size() >= 4 && startFileName.substr(startFileName.size() - 4) == ".txt") {
-        // Call the function to read text-based microstructure file
+    // Check if the file ends with ".txt", ".h5", ".dream3d", or ".ang"
+    if (startFileName.size() >= 4 && 
+        startFileName.substr(startFileName.size() - 4) == ".txt") {
+        // Read text-based microstructure file
         ReadMicrostructureTextFile(startFileName);
     } 
-    else if (startFileName.size() >= 3 && startFileName.substr(startFileName.size() - 3) == ".h5") {
-        // Call the function to read HDF5-based microstructure file
+    else if (startFileName.size() >= 3 && 
+             startFileName.substr(startFileName.size() - 3) == ".h5") {
+        // Read HDF5-based microstructure file
         ReadMicrostructureHDF5File(startFileName);
-    } 
+    }
+    else if (startFileName.size() >= 8 && 
+             startFileName.substr(startFileName.size() - 8) == ".dream3d") {
+        // Read Dream3D HDF5-based microstructure file
+        ReadMicrostructureHDF5File(startFileName);
+    }
+    else if (startFileName.size() >= 4 && 
+             startFileName.substr(startFileName.size() - 4) == ".ang") {
+        // Read EBSD .ang microstructure file
+        ReadMicrostructureAngFile(startFileName);
+    }
     else {
-        LOG_F(ERROR, "Unsupported file format: %s. Please provide a .txt or .h5 file.", startFileName.c_str());
+        LOG_F(ERROR, 
+              "Unsupported file format: %s. Please provide a .txt, .h5, .dream3d, or .ang file.", 
+              startFileName.c_str());
         exit(EXIT_FAILURE);
     }
 }
 
+
+// void Microstructure::ReadMicrostructureTextFile(const std::string &startFileName)
+// {
+//     Eigen::Vector3f ea;
+//     float CI;
+//     FILE *fp;
+//     float x, y, z, deltax, rho, id;
+//     int i, j, k, index, oriIdRead, NCellsToRead, OriId, min_id, max_id, RX, IsPixelToBeConsidered;
+//     std::vector<int> cellIdsRead;
+//     std::vector<int> oriIdsRead;
+
+//     int phase;
+//     bool is2d;
+//     bool CheckedState = false;
+//     const float DDFactor = 1.e12;
+//     const float DxFactor = 1.e6;
+
+
+//     fp = fopen(startFileName.c_str(), "r");
+//     if (!fp)
+//     {
+//         LOG_F(ERROR, "Error reading microstructure file %s", startFileName.c_str());
+//         exit(EXIT_FAILURE);
+//     }
+
+//     // read number of cells in file
+//     if (fscanf(fp, "%d \n", &NCellsToRead) != 1)
+//     {
+//         LOG_F(ERROR, "Error reading microstructure file at line 1: %s", startFileName.c_str());
+//         exit(EXIT_FAILURE);
+//     }
+
+//     LOG_F(INFO, "NCellsToRead %d", NCellsToRead);
+
+//     if (NCellsToRead != mvpStateVars->mvN)
+//     {
+//         LOG_F(ERROR, "In ReadMicrostructure %s number of cells in file not equal to user supplied system dimensions, user %d file %d", startFileName.c_str(), mvpStateVars->mvN, NCellsToRead);
+//         exit(EXIT_FAILURE);
+//     }
+
+//     LOG_F(INFO, "Reading %s data points z %s expected %d data points from %s", std::to_string(mvpStateVars->mvN).c_str(), std::to_string(mvpStateVars->mvNz).c_str(), std::to_string(NCellsToRead).c_str(), startFileName.c_str());
+
+
+
+//     // allocate grains
+//     is2d = (mvpStateVars->mvNz == 1);
+
+//     int nOris = mvpStateVars->mvN;
+
+//     // read cells in file
+//     deltax = DxFactor * mvpStateVars->mvDx;
+//     float deltay = deltax;
+//     if (mvpStateVars->mvGridType == 1)
+//         deltay *= pow(0.75, 0.5);
+
+//     i = j = k = 0;
+//     index = 0;
+// int NOris = 0;
+//     for (int line = 0; line < mvpStateVars->mvN; line++)
+//     {
+//             if (!mvUserSettings.mvReadOriId){
+//                 oriIdRead = 0;
+//             if (fscanf(fp, "%f %f %f %d %f %f %f %f %f %d \n",
+//                        &x, &y, &z, &phase, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX) != 10)
+//             {
+//                 LOG_F(ERROR, "Error reading microstructure file %s at line %d", startFileName.c_str(), line + 1);
+//                 exit(EXIT_FAILURE);
+//             }
+//             }
+//             else{
+//             if (fscanf(fp, "%f %f %f %d %f %f %f %f %f %d %d \n",
+//                        &x, &y, &z, &phase, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX, &oriIdRead) != 11)
+//             {
+//                 LOG_F(ERROR, "Error reading microstructure file %s at line %d", startFileName.c_str(), line + 1);
+//                 exit(EXIT_FAILURE);
+//             }
+//             }
+        
+
+//         if (abs(round(x / deltax) - i) > 1 || abs(round(y / deltay) - j) > 1 || (!is2d && abs(round(z / deltax) - k) > 1))
+//         {
+//             LOG_F(ERROR, "Wrong coordinates in line %d. read: %d %d ; should be: %d %d", line + 2, int(round(x / deltax)), int(round(y / deltay)), i, j);
+//             exit(EXIT_FAILURE);
+//         }
+
+//         mvpStateVars->SetLatticeIdOfCell(index, phase);
+//         // LOG_F(INFO, "read %d and %d", phase, mvpStateVars->GetLatticeIdOfCell(index));
+
+//         id = index;
+//         OriId = oriIdRead; // zero if not mvUserSettings.mvReadOriId, and assigned below
+//          if (!mvUserSettings.mvReadOriId){
+//         // Add orientation and get its id
+//         OriId = mvOrientations.addOriAndReturnId(ea);
+//         NOris++;
+//          }
+//          else{
+//     if (std::find(oriIdsRead.begin(), oriIdsRead.end(), oriIdRead) == oriIdsRead.end()) {
+//         OriId = mvOrientations.addOriAndReturnId(ea);
+//         NOris++;
+//         oriIdsRead.push_back(OriId);
+//     }
+//          }
+//         // Set orientation id of the cell
+//         mvpStateVars->SetOriIdOfCell(index, OriId);
+
+//         // Debug print
+//         if (index == 0)
+//             LOG_F(INFO, "Line: %d, Index: %d, Orientation ID: %d", line, index, OriId);
+
+//         // Debug print
+//         if (index == 0)
+//         {
+//             Eigen::Vector3f eaAssigned = mvOrientations.GetEulerAngles(OriId);
+//             LOG_F(INFO, "ea phi1: %f Phi: %f phi2 %f", eaAssigned[0], eaAssigned[1], eaAssigned[2]);
+//         }
+
+//         if (!CheckedState && RX != 0)
+//         {
+//             LOG_F(WARNING, "Keep in mind you read recrystallized cell - if you were not intending to then stop simulation and change last column in microstructure file in 0 values");
+//             CheckedState = true;
+//         }
+//         mvpStateVars->SetMicrostructureRelatedStateVars(index, CI, RX, rho * DDFactor);
+
+//         if (++i == mvpStateVars->mvNx)
+//         {
+//             if (++j == mvpStateVars->mvNy)
+//             {
+//                 k++;
+//                 j = 0;
+//             }
+//             i = 0;
+//         };
+
+//         index++;
+//     }
+
+//     LOG_F(INFO, "✅ Finished reading microstructure from HDF5. number of orientations %d",NOris);
+
+//     // Debug print orientations
+//     // mvOrientations.DebugPrintOrientations();
+// }
 
 void Microstructure::ReadMicrostructureTextFile(const std::string &startFileName)
 {
     Eigen::Vector3f ea;
     float CI;
     FILE *fp;
-    float x, y, z, deltax, rho, id;
-    int i, j, k, index, oriIdRead, NCellsToRead, OriId, min_id, max_id, RX, IsPixelToBeConsidered, IsCellGammaFiber, IsCellThetaFiber, IsCellComponent;
+    float x, y, z, deltax, rho, id, xC;
+    int i, j, k, index, oriIdRead, NCellsToRead, OriId, RX;
     std::vector<int> cellIdsRead;
     std::vector<int> oriIdsRead;
 
@@ -223,8 +401,6 @@ void Microstructure::ReadMicrostructureTextFile(const std::string &startFileName
     const float DDFactor = 1.e12;
     const float DxFactor = 1.e6;
 
-    int IsOnlyAnOrientationSubsetConsidered = 0;
-
     fp = fopen(startFileName.c_str(), "r");
     if (!fp)
     {
@@ -232,7 +408,7 @@ void Microstructure::ReadMicrostructureTextFile(const std::string &startFileName
         exit(EXIT_FAILURE);
     }
 
-    // read number of cells in file
+    // Read number of cells in file
     if (fscanf(fp, "%d \n", &NCellsToRead) != 1)
     {
         LOG_F(ERROR, "Error reading microstructure file at line 1: %s", startFileName.c_str());
@@ -243,21 +419,32 @@ void Microstructure::ReadMicrostructureTextFile(const std::string &startFileName
 
     if (NCellsToRead != mvpStateVars->mvN)
     {
-        LOG_F(ERROR, "In ReadMicrostructure %s number of cells in file not equal to user supplied system dimensions, user %d file %d", startFileName.c_str(), mvpStateVars->mvN, NCellsToRead);
+        LOG_F(ERROR, "In ReadMicrostructure %s, number of cells in file not equal to user-supplied system dimensions, user %d file %d",
+              startFileName.c_str(), mvpStateVars->mvN, NCellsToRead);
         exit(EXIT_FAILURE);
     }
 
-    LOG_F(INFO, "Reading %s data points z %s expected %d data points from %s", std::to_string(mvpStateVars->mvN).c_str(), std::to_string(mvpStateVars->mvNz).c_str(), std::to_string(NCellsToRead).c_str(), startFileName.c_str());
+    LOG_F(INFO, "Reading %s data points z %s expected %d data points from %s",
+          std::to_string(mvpStateVars->mvN).c_str(), std::to_string(mvpStateVars->mvNz).c_str(),
+          std::to_string(NCellsToRead).c_str(), startFileName.c_str());
 
-    if (IsOnlyAnOrientationSubsetConsidered != 1 && IsOnlyAnOrientationSubsetConsidered != 2 && IsOnlyAnOrientationSubsetConsidered != 3 && IsOnlyAnOrientationSubsetConsidered != 4 && IsOnlyAnOrientationSubsetConsidered != 5 && IsOnlyAnOrientationSubsetConsidered != 6)
-        LOG_F(INFO, "All cells (based on orientation) participate in the simulation");
-
-    // allocate grains
+    // Allocate grains
     is2d = (mvpStateVars->mvNz == 1);
 
     int nOris = mvpStateVars->mvN;
 
-    // read cells in file
+    // Read and log the second line (header)
+char headerBuffer[256];
+if (!fgets(headerBuffer, sizeof(headerBuffer), fp))
+{
+    LOG_F(ERROR, "Error reading header line in microstructure file %s", startFileName.c_str());
+    exit(EXIT_FAILURE);
+}
+
+LOG_F(INFO, "Microstructure file header: %s", headerBuffer);
+
+
+
     deltax = DxFactor * mvpStateVars->mvDx;
     float deltay = deltax;
     if (mvpStateVars->mvGridType == 1)
@@ -265,85 +452,121 @@ void Microstructure::ReadMicrostructureTextFile(const std::string &startFileName
 
     i = j = k = 0;
     index = 0;
+    int NOris = 0;
 
+    // Read each line of the file
     for (int line = 0; line < mvpStateVars->mvN; line++)
     {
-       
-        if (IsOnlyAnOrientationSubsetConsidered == 1 || IsOnlyAnOrientationSubsetConsidered == 2 || IsOnlyAnOrientationSubsetConsidered == 3 || IsOnlyAnOrientationSubsetConsidered == 4 || IsOnlyAnOrientationSubsetConsidered == 5 || IsOnlyAnOrientationSubsetConsidered == 6)
+        oriIdRead = 0;  // Default initialization
+        xC = 0.;  // Default initialization
+        // Buffer for reading the line
+        char lineBuffer[256];
+        if (!fgets(lineBuffer, sizeof(lineBuffer), fp))
         {
-            if (mvUserSettings.mvReadOriId){
-               LOG_F(ERROR, "Reading microstructure file with Ori Id not supported for subset orientations");
-                exit(EXIT_FAILURE);
-            }
-            if (fscanf(fp, "%f %f %f %d %f %f %f %f %f %d %d %d %d \n",
-                       &x, &y, &z, &phase, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX, &IsCellGammaFiber, &IsCellThetaFiber, &IsCellComponent) != 13)
-            {
-                LOG_F(ERROR, "Error reading microstructure file %s at line %d", startFileName.c_str(), line + 1);
+            LOG_F(ERROR, "Error reading microstructure file %s at line %d (unexpected EOF)", startFileName.c_str(), line + 2);
+            exit(EXIT_FAILURE);
+        }
+
+        int count;
+        if (!mvUserSettings.mvReadOriId && !mvUserSettings.mvReadSoluteConcentration)
+        {
+            // Try reading 11 columns, but ignore the last one if present
+            count = sscanf(lineBuffer, "%f %f %f %d %f %f %f %f %f %d %*d",
+                           &x, &y, &z, &phase, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX);
+
+            if (count == 10) {
+                // Successfully read 10 columns, proceed as normal
+            } else if (count == 11) {
+                // Successfully read 11 columns, last column is ignored
+            } else {
+                LOG_F(ERROR, "Error reading microstructure file %s at line %d. Expected 10 or 11 columns, got %d.",
+                      startFileName.c_str(), line + 2, count);
                 exit(EXIT_FAILURE);
             }
         }
         else
         {
-            if (!mvUserSettings.mvReadOriId){
-                oriIdRead = 0;
-            if (fscanf(fp, "%f %f %f %d %f %f %f %f %f %d \n",
-                       &x, &y, &z, &phase, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX) != 10)
+            if (mvUserSettings.mvReadOriId && mvUserSettings.mvReadSoluteConcentration) {
+                count = sscanf(lineBuffer, "%f %f %f %d %f %f %f %f %f %d %d %f",
+                    &x, &y, &z, &phase, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX, &oriIdRead, &xC);
+            }
+            if (mvUserSettings.mvReadOriId && !mvUserSettings.mvReadSoluteConcentration){
+            // Read exactly 11 columns, including OriId
+            count = sscanf(lineBuffer, "%f %f %f %d %f %f %f %f %f %d %d",
+                           &x, &y, &z, &phase, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX, &oriIdRead);
+            }
+            if (!mvUserSettings.mvReadOriId && mvUserSettings.mvReadSoluteConcentration){
+                count = sscanf(lineBuffer, "%f %f %f %d %f %f %f %f %f %d %f",
+                &x, &y, &z, &phase, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX, &xC);
+            }
+            if (count != 11 && count != 12) 
             {
-                LOG_F(ERROR, "Error reading microstructure file %s at line %d", startFileName.c_str(), line + 1);
+                LOG_F(ERROR, "Error reading microstructure file %s at line %d. Expected 11 or 12 columns, got %d.",
+                      startFileName.c_str(), line + 2, count);
                 exit(EXIT_FAILURE);
-            }
-            }
-            else{
-            if (fscanf(fp, "%f %f %f %d %d %f %f %f %f %f %d \n",
-                       &x, &y, &z, &phase, &oriIdRead, &rho, &ea[0], &ea[1], &ea[2], &CI, &RX) != 11)
-            {
-                LOG_F(ERROR, "Error reading microstructure file %s at line %d", startFileName.c_str(), line + 1);
-                exit(EXIT_FAILURE);
-            }
             }
         }
 
+        // Validate coordinate consistency
         if (abs(round(x / deltax) - i) > 1 || abs(round(y / deltay) - j) > 1 || (!is2d && abs(round(z / deltax) - k) > 1))
         {
-            LOG_F(ERROR, "Wrong coordinates in line %d. read: %d %d ; should be: %d %d", line + 2, int(round(x / deltax)), int(round(y / deltay)), i, j);
+            LOG_F(ERROR, "Wrong coordinates in line %d. Read: %d %d ; Expected: %d %d",
+                  line + 2, int(round(x / deltax)), int(round(y / deltay)), i, j);
             exit(EXIT_FAILURE);
         }
-
+        if (phase == 4) {
+            phase = 1; // change phase to BCC
+            mvpStateVars->SetCellAsMartensite(index);
+        }
+        else{
+            mvpStateVars->SetCellAsNonMartensite(index);
+        }
         mvpStateVars->SetLatticeIdOfCell(index, phase);
-        // LOG_F(INFO, "read %d and %d", phase, mvpStateVars->GetLatticeIdOfCell(index));
-
         id = index;
-        OriId = oriIdRead; // zero if not mvUserSettings.mvReadOriId, and assigned below
-         if (!mvUserSettings.mvReadOriId){
-        // Add orientation and get its id
-        OriId = mvOrientations.addOriAndReturnId(ea);
-         }
-         else{
-    if (std::find(oriIdsRead.begin(), oriIdsRead.end(), oriIdRead) == oriIdsRead.end()) 
-        OriId = mvOrientations.addOriAndReturnId(ea);
-        oriIdsRead.push_back(OriId);
-         }
-        // Set orientation id of the cell
+
+        if (!mvUserSettings.mvReadOriId)
+        {
+            // Assign orientation ID if not reading from the file
+            OriId = mvOrientations.addOriAndReturnId(ea);
+            NOris++;
+        }
+        else
+        {
+            auto it = std::find(oriIdsRead.begin(), oriIdsRead.end(), oriIdRead);
+            int oriIdIndex = std::distance(oriIdsRead.begin(), it);  // Get index
+
+            if (it == oriIdsRead.end()) 
+            {
+                OriId = mvOrientations.addOriAndReturnId(ea);
+                NOris++;
+                oriIdsRead.push_back(oriIdRead);
+                cellIdsRead.push_back(index);
+            }
+            else{
+                OriId = mvpStateVars->GetOriIdOfCell(cellIdsRead[oriIdIndex]);
+            }
+        }
+
+        // Set orientation ID of the cell
         mvpStateVars->SetOriIdOfCell(index, OriId);
 
-        // Debug print
-        if (index == 0)
-            LOG_F(INFO, "Line: %d, Index: %d, Orientation ID: %d", line, index, OriId);
-
-        // Debug print
+        // Debug print for first line
         if (index == 0)
         {
+            LOG_F(INFO, "Line: %d, Index: %d, Orientation ID: %d", line, index, OriId);
             Eigen::Vector3f eaAssigned = mvOrientations.GetEulerAngles(OriId);
             LOG_F(INFO, "ea phi1: %f Phi: %f phi2 %f", eaAssigned[0], eaAssigned[1], eaAssigned[2]);
         }
-
+        // Warn if RX is nonzero
         if (!CheckedState && RX != 0)
         {
-            LOG_F(WARNING, "Keep in mind you read recrystallized cell - if you were not intending to then stop simulation and change last column in microstructure file in 0 values");
+            LOG_F(WARNING, "Keep in mind you read remvUserSettings.mvReadSoluteConcentrationcrystallized cell - if you were not intending to then stop simulation and change last column in microstructure file to 0 values");
             CheckedState = true;
         }
-        mvpStateVars->SetEBSDRelatedStuffForRexAndGG(index, CI, RX, rho * DDFactor);
 
+        mvpStateVars->SetMicrostructureRelatedStateVars(index, CI, RX, rho * DDFactor, mvUserSettings.mvReadSoluteConcentration, xC);
+
+        // Grid index update
         if (++i == mvpStateVars->mvNx)
         {
             if (++j == mvpStateVars->mvNy)
@@ -352,48 +575,49 @@ void Microstructure::ReadMicrostructureTextFile(const std::string &startFileName
                 j = 0;
             }
             i = 0;
-        };
+        }
 
         index++;
     }
 
-    LOG_F(INFO, "Finished reading microstructure");
-
-    // Debug print orientations
-    // mvOrientations.DebugPrintOrientations();
+    LOG_F(INFO, "✅ Finished reading microstructure file. Number of orientations: %d", NOris);
 }
 
 
 
 
-void Microstructure::ReadMicrostructureHDF5File(const std::string &startFileName)
+void Microstructure::ReadMicrostructureAngFile(const std::string &startFileName)
 {
     Eigen::Vector3f ea;
     float CI;
-    float x, y, z, deltax, rho;
-    int i, j, k, index, NCellsToRead, OriId, RX;
+    FILE *fp;
+    float x, y, z, deltax, rho, id, other1, other2, iq, phi1, phi, phi2;
+    int i, j, k, index, oriIdRead, OriId, RX, phaseANG;
+    std::vector<int> cellIdsRead;
+    std::vector<int> oriIdsRead;
+
+    int phase;
+    bool is2d;
     bool CheckedState = false;
     const float DDFactor = 1.e12;
     const float DxFactor = 1.e6;
-    bool is2d;
-    H5_IO file(startFileName, "r");
 
-    // Assuming number of cells is stored in a dataset (adjust the dataset name accordingly)
-    std::vector<int> nCellsVec = file.ReadDataset<int>("/metadata/NCellsToRead");
-    NCellsToRead = nCellsVec[0];  // Assuming the dataset contains one value
-
-    LOG_F(INFO, "NCellsToRead %d", NCellsToRead);
-
-    if (NCellsToRead != mvpStateVars->mvN)
+    fp = fopen(startFileName.c_str(), "r");
+    if (!fp)
     {
-        LOG_F(ERROR, "In ReadMicrostructure %s number of cells in file not equal to user supplied system dimensions, user %d file %d", startFileName.c_str(), mvpStateVars->mvN, NCellsToRead);
+        LOG_F(ERROR, "Error reading microstructure file %s", startFileName.c_str());
         exit(EXIT_FAILURE);
     }
 
-    LOG_F(INFO, "Reading %d data points, expected %d data points from %s", NCellsToRead, mvpStateVars->mvN, startFileName.c_str());
+    LOG_F(INFO, "Reading %s data points z %s data points from %s",
+          std::to_string(mvpStateVars->mvN).c_str(),
+          std::to_string(mvpStateVars->mvNz).c_str(),
+          startFileName.c_str());
 
     // Allocate grains
     is2d = (mvpStateVars->mvNz == 1);
+    int nOris = mvpStateVars->mvN;
+
     deltax = DxFactor * mvpStateVars->mvDx;
     float deltay = deltax;
     if (mvpStateVars->mvGridType == 1)
@@ -401,47 +625,60 @@ void Microstructure::ReadMicrostructureHDF5File(const std::string &startFileName
 
     i = j = k = 0;
     index = 0;
+    int NOris = 0;
 
-    // Reading datasets from the HDF5 file
-    std::vector<float> xCoords = file.ReadDataset<float>("/geometry/x");
-    std::vector<float> yCoords = file.ReadDataset<float>("/geometry/y");
-    std::vector<float> zCoords = file.ReadDataset<float>("/geometry/z");
-    std::vector<int> phases = file.ReadDataset<int>("/geometry/phase");
-    std::vector<float> rhos = file.ReadDataset<float>("/geometry/rho");
-    std::vector<float> eulerAngles1 = file.ReadDataset<float>("/geometry/euler1");
-    std::vector<float> eulerAngles2 = file.ReadDataset<float>("/geometry/euler2");
-    std::vector<float> eulerAngles3 = file.ReadDataset<float>("/geometry/euler3");
-    std::vector<float> CIs = file.ReadDataset<float>("/geometry/CI");
-    std::vector<int> RXs = file.ReadDataset<int>("/geometry/RX");
-
-    for (int line = 0; line < NCellsToRead; line++)
+    // --- MAIN FILE READING LOOP ---
+    for (int line = 0; line < mvpStateVars->mvN; line++)
     {
-        x = xCoords[line];
-        y = yCoords[line];
-        z = zCoords[line];
-        int phase = phases[line];
-        rho = rhos[line];
-        ea[0] = eulerAngles1[line];
-        ea[1] = eulerAngles2[line];
-        ea[2] = eulerAngles3[line];
-        CI = CIs[line];
-        RX = RXs[line];
+        oriIdRead = 0;  // Default initialization
+        char lineBuffer[256];
 
-        if (abs(round(x / deltax) - i) > 1 || abs(round(y / deltay) - j) > 1 || (!is2d && abs(round(z / deltax) - k) > 1))
+        // Skip comment or empty lines
+        do {
+            if (!fgets(lineBuffer, sizeof(lineBuffer), fp))
+            {
+                LOG_F(ERROR, "Error reading microstructure file %s at line %d (unexpected EOF)",
+                      startFileName.c_str(), line + 2);
+                exit(EXIT_FAILURE);
+            }
+        } while (lineBuffer[0] == '#' || strlen(lineBuffer) < 2);
+
+        int count = sscanf(lineBuffer, "%f %f %f %f %f %f %f %d %f %f",
+                           &phi1, &phi, &phi2, &x, &y, &iq, &CI, &phaseANG, &other1, &other2);
+
+        RX = 0;
+        if (count != 10)
         {
-            LOG_F(ERROR, "Wrong coordinates in line %d. read: %d %d ; should be: %d %d", line + 2, int(round(x / deltax)), int(round(y / deltay)), i, j);
+            LOG_F(ERROR, "Error reading microstructure file %s at line %d. Expected 10 columns, got %d.",
+                  startFileName.c_str(), line + 2, count);
             exit(EXIT_FAILURE);
         }
 
+        // Convert radians to degrees
+        ea[0] = phi1 * 180.0 / 3.14159;
+        ea[1] = phi  * 180.0 / 3.14159;
+        ea[2] = phi2 * 180.0 / 3.14159;
+
+        // Validate coordinate consistency
+        if (abs(round(x / deltax) - i) > 1 || abs(round(y / deltay) - j) > 1 ||
+            (!is2d && abs(round(z / deltax) - k) > 1))
+        {
+            LOG_F(ERROR, "Wrong coordinates in index %d. Read: %f %f ; Expected: %f %f",
+                  index, x, y, i * deltax, j * deltay);
+            exit(EXIT_FAILURE);
+        }
+
+        phase = 1;
         mvpStateVars->SetLatticeIdOfCell(index, phase);
+        id = index;
 
-        // Add orientation and get its id
+        // Assign and register orientation
         OriId = mvOrientations.addOriAndReturnId(ea);
+        NOris++;
 
-        // Set orientation id of the cell
+        // Set orientation ID of the cell
         mvpStateVars->SetOriIdOfCell(index, OriId);
 
-        // Debug print
         if (index == 0)
         {
             LOG_F(INFO, "Line: %d, Index: %d, Orientation ID: %d", line, index, OriId);
@@ -451,12 +688,14 @@ void Microstructure::ReadMicrostructureHDF5File(const std::string &startFileName
 
         if (!CheckedState && RX != 0)
         {
-            LOG_F(WARNING, "Keep in mind you read recrystallized cell - if you were not intending to then stop simulation and change last column in microstructure file in 0 values");
+            LOG_F(WARNING, "Keep in mind you read recrystallized cell - if you were not intending to then stop simulation and change last column in microstructure file to 0 values");
             CheckedState = true;
         }
 
-        mvpStateVars->SetEBSDRelatedStuffForRexAndGG(index, CI, RX, rho * DDFactor);
+        mvpStateVars->SetMicrostructureRelatedStateVars(index, CI, 0., 0.,
+                                                        mvUserSettings.mvHasSoluteDiffusion, 0.);
 
+        // Grid index update
         if (++i == mvpStateVars->mvNx)
         {
             if (++j == mvpStateVars->mvNy)
@@ -470,8 +709,131 @@ void Microstructure::ReadMicrostructureHDF5File(const std::string &startFileName
         index++;
     }
 
-    LOG_F(INFO, "Finished reading microstructure");
+    LOG_F(INFO, "✅ Finished reading microstructure file. Number of orientations: %d", NOris);
 }
+
+
+void Microstructure::ReadMicrostructureHDF5File(const std::string &startFileName) {
+    LOG_F(INFO, "📂 Reading microstructure from HDF5 file: %s", startFileName.c_str());
+
+    // ✅ Open the HDF5 file
+    H5_IO file(startFileName, "r");
+
+    // ✅ Directly Read Grid Dimensions (Nx, Ny, Nz) using HDF5 API to avoid ReadDataset() issues
+    int64_t dims[3] = {0, 0, 0};
+    hid_t hdf5_file = H5Fopen(startFileName.c_str(), H5F_ACC_RDONLY, H5P_DEFAULT);
+    hid_t dset = H5Dopen(hdf5_file, "/DataContainers/SyntheticVolumeDataContainer/_SIMPL_GEOMETRY/DIMENSIONS", H5P_DEFAULT);
+
+    if (dset < 0) {
+        LOG_F(ERROR, "🚨 Failed to open DIMENSIONS dataset!");
+        exit(EXIT_FAILURE);
+    }
+
+    herr_t status = H5Dread(dset, H5T_NATIVE_INT64, H5S_ALL, H5S_ALL, H5P_DEFAULT, dims);
+    if (status < 0) {
+        LOG_F(ERROR, "🚨 Failed to read DIMENSIONS dataset!");
+        exit(EXIT_FAILURE);
+    }
+
+    H5Dclose(dset);
+    H5Fclose(hdf5_file);
+
+    // ✅ Extract dimensions
+    int Nx = static_cast<int>(dims[0]);
+    int Ny = static_cast<int>(dims[1]);
+    int Nz = static_cast<int>(dims[2]);
+    int NCellsToRead = Nx * Ny * Nz;
+    mvpStateVars->mvN = NCellsToRead;
+
+    LOG_F(INFO, "✅ Grid size: Nx=%d, Ny=%d, Nz=%d, Total=%d", Nx, Ny, Nz, NCellsToRead);
+
+    if (NCellsToRead == 0) {
+        LOG_F(ERROR, "🚨 Invalid number of cells: 0. Exiting.");
+        exit(EXIT_FAILURE);
+    }
+
+    // ✅ Read voxel spacing and origin
+    std::vector<float> spacing = file.ReadDataset<float>("/DataContainers/SyntheticVolumeDataContainer/_SIMPL_GEOMETRY/SPACING");
+    std::vector<float> origin = file.ReadDataset<float>("/DataContainers/SyntheticVolumeDataContainer/_SIMPL_GEOMETRY/ORIGIN");
+
+    float deltax = spacing[0] * 1.e6; // Convert to micrometers
+    float deltay = spacing[1] * 1.e6;
+    float deltaz = spacing[2] * 1.e6;
+
+    // ✅ Read voxel data
+    std::vector<int32_t> featureIds = file.ReadDataset<int32_t>("/DataContainers/SyntheticVolumeDataContainer/CellData/FeatureIds");
+    std::vector<float> eulerAngles = file.ReadDataset<float>("/DataContainers/SyntheticVolumeDataContainer/CellData/EulerAngles");
+    std::vector<uint32_t> phases = file.ReadDataset<uint32_t>("/DataContainers/SyntheticVolumeDataContainer/CellData/Phases");
+
+    // 🚨 Validate dataset sizes
+    if (featureIds.size() != NCellsToRead || eulerAngles.size() != 3 * NCellsToRead || phases.size() != NCellsToRead) {
+        LOG_F(ERROR, "🚨 Dataset size mismatch! FeatureIds: %ld, EulerAngles: %ld, Phases: %ld (Expected: %d)",
+              featureIds.size(), eulerAngles.size(), phases.size(), NCellsToRead);
+        exit(EXIT_FAILURE);
+    }
+
+    LOG_F(INFO, "✅ Successfully read all datasets. Assigning data...");
+
+    // 🔹 **Track which Feature IDs (grains) already have an Orientation ID**
+    std::map<int, int> grainIdToOriId;
+
+    // 🔹 **Iterate in Dream3D's Z-Y-X storage order**
+    int index = 0;
+    int NOris = 0;
+    for (int k = 0; k < Nz; k++) {
+        for (int j = 0; j < Ny; j++) {
+            for (int i = 0; i < Nx; i++) {
+                if (index >= featureIds.size() || index >= phases.size() || 3 * index + 2 >= eulerAngles.size()) {
+                    LOG_F(ERROR, "🚨 Index %d out of bounds! FeatureIds size: %ld, Phases size: %ld, EulerAngles size: %ld",
+                          index, featureIds.size(), phases.size(), eulerAngles.size());
+                    exit(EXIT_FAILURE);
+                }
+
+                // Assign Phase ID
+                mvpStateVars->SetLatticeIdOfCell(index, phases[index]);
+
+                // **Get Feature ID (Grain ID)**
+                int grainID = featureIds[index];
+
+                // **Read Euler Angles (Keep Degrees, as Omicron expects degrees)**
+                Eigen::Vector3f ea;
+                ea[0] = eulerAngles[3 * index + 0];
+                ea[1] = eulerAngles[3 * index + 1];
+                ea[2] = eulerAngles[3 * index + 2];
+
+                // 🚀 **Assign Correct Orientation ID (Grain-based Handling)**
+                int OriId;
+                if (mvUserSettings.mvReadOriId) {
+                    auto it = grainIdToOriId.find(grainID);
+                    if (it != grainIdToOriId.end()) {
+                        OriId = it->second;
+                    } else {
+                        OriId = mvOrientations.addOriAndReturnId(ea);
+                        grainIdToOriId[grainID] = OriId;
+                        NOris++;
+                    }
+                } else {
+                    OriId = mvOrientations.addOriAndReturnId(ea);
+                                            NOris++;
+
+                }
+
+                mvpStateVars->SetOriIdOfCell(index, OriId);
+
+                // Debug print for first few voxels
+                if (index < 5) {
+                    LOG_F(INFO, "Index %d: Pos (%.3f, %.3f, %.3f), Phase %d, Euler (%.3f, %.3f, %.3f), GrainID %d, OriId %d",
+                          index, i * deltax, j * deltay, k * deltaz, phases[index], ea[0], ea[1], ea[2], grainID, OriId);
+                }
+
+                index++;
+            }
+        }
+    }
+
+    LOG_F(INFO, "✅ Finished reading microstructure from HDF5. number of orientations %d",NOris);
+}
+
 
 
 
@@ -717,6 +1079,41 @@ void Microstructure::WriteMicrostructureRX(const std::string &fullPath)
     outputFile.close();
 }
 
+void Microstructure::WriteMicrostructureHydrogen(const std::string &fullPath)
+{
+
+    std::ofstream outputFile(fullPath);
+    if (!outputFile.is_open())
+    {
+        LOG_F(ERROR, "Error opening output file: %s", fullPath.c_str());
+        LOG_F(ERROR, "Current path: %s", std::filesystem::current_path().c_str());
+
+        return;
+    }
+
+    // Write data to the file
+    int N = mvpStateVars->mvN;
+    Eigen::Vector3f eaOfCell;
+
+    outputFile << " x " << " y " << " z " <<" latticeId "<< " phi1 " << " Phi " << " phi2 " << " oriId " << "Trap ratio "<<" SoluteConc " << " SoluteConcTrapped " << std::endl;
+
+    for (int index = 0; index < N; index++)
+    {
+        int oriId = mvpStateVars->GetOriIdOfCell(index);
+        eaOfCell = mvOrientations.GetEulerAngles(oriId);
+        float x = mvpStateVars->GetXFromIndex(index) * 1.e6;
+        float y = mvpStateVars->GetYFromIndex(index) * 1.e6;
+        float z = mvpStateVars->GetZFromIndex(index) * 1.e6;
+        outputFile << x << " " << y << " " << z << " "<< mvpStateVars->mvpLatticeId[index]<<" "
+                   << eaOfCell[0] << " " << eaOfCell[1] << " " << eaOfCell[2] << " "
+                   << oriId << " " << mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[index] << " " <<(*mvpStateVars->mvpXC)[index] << " " << (*mvpStateVars->mvpXCTrapped)[index] << std::endl;
+    }
+
+    LOG_F(INFO, "Successfully wrote data to: %s", fullPath.c_str());
+
+    outputFile.close();
+}
+
 
 
 void Microstructure::WriteMicrostructureQP(const std::string &fullPath)
@@ -754,6 +1151,90 @@ void Microstructure::WriteMicrostructureQP(const std::string &fullPath)
     outputFile.close();
 }
 
+
+void Microstructure::WriteHydrogenStateVars(const std::string &fullPath)
+{
+
+    std::ofstream outputFile(fullPath);
+    if (!outputFile.is_open())
+    {
+        LOG_F(ERROR, "Error opening output file: %s", fullPath.c_str());
+        LOG_F(ERROR, "Current path: %s", std::filesystem::current_path().c_str());
+
+        return;
+    }
+
+    // Write data to the file
+    int N = mvpStateVars->mvN;
+    Eigen::Vector3f eaOfCell;
+
+    outputFile << " time [sec] " <<  " Hydrogen Tot FCC [at. percent]  "<< " Hydrogen Tot BCC [at. percent]   " << " Hydrogen trapped FCC [at. percent]  "<< " Hydrogen trapped BCC [at. percent]   " <<  std::endl;
+
+    for (int index_step = 0; index_step < TimeEvol.size(); index_step++)
+    {
+        outputFile << TimeEvol[index_step] << " " << FCC_XC[index_step]  << " " <<  BCC_XC[index_step]<< " " <<  FCC_TrappedXC[index_step]<< " "<<BCC_TrappedXC[index_step]<<std::endl;
+    }
+
+    LOG_F(INFO, "Successfully wrote data to: %s", fullPath.c_str());
+
+    outputFile.close();
+}
+
+
+void Microstructure::WriteCarbon(const std::string &fullPath)
+{
+
+    std::ofstream outputFile(fullPath);
+    if (!outputFile.is_open())
+    {
+        LOG_F(ERROR, "Error opening output file: %s", fullPath.c_str());
+        LOG_F(ERROR, "Current path: %s", std::filesystem::current_path().c_str());
+
+        return;
+    }
+
+    // Write data to the file
+
+
+    outputFile << " time [sec] " << " Carbon BCC [ at. fraction] " << " Carbon FCC [ at. fraction]  "<< std::endl;
+
+    for (int index_step = 0; index_step < TimeEvol.size(); index_step++)
+    {
+        outputFile << TimeEvol[index_step] << " " << BCC_XC[index_step]  << " " <<  FCC_XC[index_step]<< std::endl;
+    }
+
+    LOG_F(INFO, "Successfully wrote data to: %s", fullPath.c_str());
+
+    outputFile.close();
+}
+
+void Microstructure::WriteHydrogenInflowOutflow(const std::string &fullPath)
+{
+
+    std::ofstream outputFile(fullPath);
+    if (!outputFile.is_open())
+    {
+        LOG_F(ERROR, "Error opening output file: %s", fullPath.c_str());
+        LOG_F(ERROR, "Current path: %s", std::filesystem::current_path().c_str());
+
+        return;
+    }
+
+    // Write data to the file
+    int N = mvpStateVars->mvN;
+    Eigen::Vector3f eaOfCell;
+
+    outputFile << " time [sec] " << " Hydrogen Inflow [ at. percent * area] " << " Hydrogen Outflow Left[ at. percent * area]  "<< " Hydrogen Outflow Right[ at. percent * area]  " << std::endl;
+
+    for (int index_step = 0; index_step < TimeEvolForUncharging.size(); index_step++)
+    {
+        outputFile << TimeEvolForUncharging[index_step] << " " << InFlow[index_step]  << " " <<  OutFlowLeft[index_step]<< " " <<  OutFlowRight[index_step]<< std::endl;
+    }
+
+    LOG_F(INFO, "Successfully wrote data to: %s", fullPath.c_str());
+
+    outputFile.close();
+}
 
 // Helper function to generate color from value
 void Microstructure::GetColorFromValue(float value, float minValue, float maxValue, uint8_t &r, uint8_t &g, uint8_t &b)
@@ -1166,8 +1647,9 @@ double Microstructure::MisorientationBetweenCells(int index1, int index2, bool M
     mis = mvOrientations.CalculateMisorientationBetweenTwoOriIds(OriId1, OriId2);
     if (!IsTheNumberFinite(mis))
     { // isnan is undefined now in latest cmath (from math) and cannot be reloaded. But we need to check because if the ea is identical ro the ea1 the misorientation is nan
-        // std::cout<<" ea[0]  "<<ea[0] <<" ea[1] "<<ea[1]<<" ea[2] "<<ea[2]<<" ea1[0]  "<<ea1[0] <<" ea1[1] "<<ea1[1]<<" ea1[2] "<<ea1[2]<<std::endl;
-        mis = 0.;
+    //    std::cout<<" ea[0]  "<<ea[0] <<" ea[1] "<<ea[1]<<" ea[2] "<<ea[2]<<" ea1[0]  "<<ea1[0] <<" ea1[1] "<<ea1[1]<<" ea1[2] "<<ea1[2]<<std::endl;
+        // std::cout<<" yes nan detected but thats good "<<std::endl;
+    mis = 0.;
     }
     if (mis < 0. || mis > 64.)
     {
@@ -1185,7 +1667,7 @@ double Microstructure::MisorientationBetweenCells(int index1, int index2, bool M
             *CSLRelationship = 19;
         // LOG_F(INFO,"CSL19a between orientations %e, %e,%e, and %e, %e,%e, as the distance is  %e ", ea[0] ,ea[1] ,ea[2],ea1[0] ,ea1[1] ,ea1[2], deltaMisorientation);
     }
-
+// std::cout<<"returnig mis "<<mis<<std::endl;
     if (mis > mvUserSettings.mvHAGB && MaxHagb)
         return mvUserSettings.mvHAGB; // if we want the misorientation only to see if it is hagb (e.g. mobility calculations) we return max{mvUserSettings.mvHAGB,mis}, Otherwise (e.g. for plotting purposes) we return actual value (MaxHagb==false in that case).
     return mis;
@@ -1282,7 +1764,10 @@ void Microstructure::InitInterfaceAndInterphaseCells()
         mvpStateVars->GetNeighbourCellOffsets(index, nbrList1Temp);
         for (int nbr = 0; nbr < mvpStateVars->mvNAll; nbr++)
         {
+
             indexNbr = nbrList1Temp[nbr];
+            if (mvUserSettings.mvIsHydrogen && mvpStateVars->GetDistanceBetweenCellsNoPerodic(index,indexNbr) > 3.* mvpStateVars->mvDx ) continue; // it means not reAL NEIGHBOURS
+
             if (mvpStateVars->GetLatticeIdOfCell(index) == mvpStateVars->GetLatticeIdOfCell(indexNbr))
             {
                 mis = MisorientationBetweenCells(index, indexNbr, true, false, false, &CSLRelationship);
@@ -1291,6 +1776,8 @@ void Microstructure::InitInterfaceAndInterphaseCells()
                     nBoundaries++;
                     mvpStateVars->SetCellAsInterface(index);
                     AddInterfaceIndex(index);
+                                //    LOG_F(INFO,"added icell has also rho %g and k %g mis %g ori id1 %d ori id 2 %d", mvpStateVars->mvpRho[index], mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[index],mis, mvpStateVars->GetOriIdOfCell(index),mvpStateVars->GetOriIdOfCell(indexNbr));
+
                     break;
                 }
             }
@@ -1478,7 +1965,8 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
 
     for (int i = 0; i < mvpStateVars->mvN; i++)
     {
-        if (!mvUserSettings.mvReadDislocationDensity)
+
+        if (!mvUserSettings.mvReadDislocationDensity && !mvUserSettings.mvReadOnlyFreeDislocationDensity)
             mvpStateVars->mvpRho[i] = 1.e12;
 
         if (mvUserSettings.mvIsTestRVE)
@@ -1486,7 +1974,7 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
             mvpStateVars->mvpHasNeighNonInd[i] = 0;
             mvpStateVars->mvpCI[i] = 1.;
             mvpStateVars->mvpRX[i] = 1.;
-           if (!mvUserSettings.mvIsHydrogen) mvpStateVars->mvpKAM[i] = 1.;
+      mvpStateVars->mvpKAM[i] = 1.;
         }
         mvpStateVars->mvpKAM[i] = 0.;
 
@@ -1587,8 +2075,7 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
         if (NNeighs > 0.)
         {
             mvpStateVars->mvpKAM[i] /= NNeighs;
-            if (mvUserSettings.mvIsHydrogen && mvUserSettings.mvIsTestRVE && CellIsHAGB)
-                mvpStateVars->mvpKAM[i] = mvUserSettings.mvHAGB;
+
         }
 
         if (NNeighs < 0.01)
@@ -1618,7 +2105,7 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
     {
         for (int i = 0; i < mvpStateVars->mvN; i++)
         {
-           if (!mvUserSettings.mvIsHydrogenSource || !mvUserSettings.mvIsHydrogen) (*mvpStateVars->mvpXC)[i] = mvUserSettings.mvAverageCarbon;
+          (*mvpStateVars->mvpXC)[i] = mvUserSettings.mvAverageCarbon;
             // std::cout<<" all fine 111 "<<std::endl;
 
             if (mvUserSettings.mvSoluteSegregationDislocations)
@@ -1637,7 +2124,7 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
 
             // std::cout<<" all fine 1 "<<std::endl;
             // This is just a way to make articial strips of high defect density in microstructure to test Ctrapping to defects
-            if (mvUserSettings.mvIsTestRVE && mvUserSettings.mvSoluteSegregationDislocations && !mvUserSettings.mvIsHydrogen)
+            if (mvUserSettings.mvIsTestRVE && mvUserSettings.mvSoluteSegregationDislocations)
             {
                 int distKAM2 = mvpStateVars->mvNx / 5.;
                 int distKAM10 = mvpStateVars->mvNx / 4.;
@@ -1663,7 +2150,7 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
             // if orientations are per cell then kam is going to be recalculated later and so dislospacing and number. Otherwise we keep the KAM as read.
             if (mvUserSettings.mvSoluteSegregationDislocations)
             {
-                if (!mvUserSettings.mvReadDislocationDensity && (!mvUserSettings.mvIsTestRVE || mvUserSettings.mvIsHydrogen))
+                if ((!mvUserSettings.mvReadDislocationDensity || mvUserSettings.mvReadOnlyFreeDislocationDensity) && !mvUserSettings.mvIsTestRVE)
                 {
                     // mvpStateVars->mvpKAM[i] *= 10.0;
                     float b = (mvpStateVars->IsCellFCC(i) ? mvUserSettings.mvBurgersVectorFCC : mvUserSettings.mvBurgersVectorBCC);
@@ -1671,10 +2158,9 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
                     float disloTypeCoeff = 3.;
                     double rho = disloTypeCoeff * mvpStateVars->mvpKAM[i] * 0.0175 / b / mvpStateVars->mvDx / 1.e6; // IN 1/SQUARE MICROMETER
                 //    std::cout<<" rho is "<<rho<<std::endl;
-                    mvpStateVars->mvpRho[i] = rho * 1.e12;   
+                   if (mvUserSettings.mvReadOnlyFreeDislocationDensity) mvpStateVars->mvpRho[i] += rho * 1.e12;   
+                   else mvpStateVars->mvpRho[i] = rho * 1.e12;  
                    if (mvpStateVars->mvpRho[i] < 1.e12) mvpStateVars->mvpRho[i] = 1.e12;
-
-                    if (mvpStateVars->IsCellBCC(i)) mvpStateVars->mvpRho[i] += 5.e14;
                                                                      // IN 1/SQUARE METER
                 }
                 mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i] = mvUserSettings.mvKappaFactorForCsegInClusterArea * mvpStateVars->mvpRho[i];
@@ -1682,6 +2168,285 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
                     mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i] = 0.;
                                    if (mvUserSettings.mvAllowDislocationsSegregationInAustenite && mvpStateVars->IsCellFCC(i))
                     mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i] = 0.2 * mvUserSettings.mvKappaFactorForCsegInClusterArea * mvpStateVars->mvpRho[i];   
+            
+  
+            }
+        }
+        // std::cout<<" all fine 3 "<<std::endl;
+
+        if (mvUserSettings.mvSoluteSegregationDislocations)
+        {
+            mvpStateVars->SetCarbonTrappedAndCarbonFreeForGivenXcTot();
+            // std::cout<<" all fine 4 "<<std::endl;
+
+            meanKAM_FCC = 0.;
+            meanKAM_BCC = 0.;
+            double meanRhoBCC = 0.;
+            double meanRhoFCC = 0.;
+            double meanXCTrappedFCC = 0.;
+            double meanXCTrappedBCC = 0.;
+            double meanKappaFCC = 0.;
+            double meanKappaBCC = 0.;
+            for (int i = 0; i < mvpStateVars->mvN; i++)
+            {
+                if (mvpStateVars->IsCellFCC(i))
+                {
+                    if (mvpStateVars->mvpKAM[i] > 0.)
+                        meanKAM_FCC += mvpStateVars->mvpKAM[i];
+                    if (mvpStateVars->mvpRho[i] > 0.)
+                        meanRhoFCC += (mvpStateVars->mvpRho[i] * 1.e-12);
+                    if (mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i] > 0.)
+                    {
+                        meanXCTrappedFCC += (*mvpStateVars->mvpXCTrapped)[i];
+                        meanKappaFCC += mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i];
+                    }
+                }
+                if (mvpStateVars->IsCellBCC(i))
+                {
+                    if (mvpStateVars->mvpKAM[i] > 0.)
+                        meanKAM_BCC += mvpStateVars->mvpKAM[i];
+                    if (mvpStateVars->mvpRho[i] > 0.)
+                        meanRhoBCC += (mvpStateVars->mvpRho[i] * 1.e-12);
+                    if (mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i] > 0.)
+                    {
+                        meanXCTrappedBCC += (*mvpStateVars->mvpXCTrapped)[i];
+                        meanKappaBCC += mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i];
+                    }
+                }
+            }
+            // std::cout<<" all fine 5 "<<std::endl;
+
+            meanKAM_BCC /= NBCC;
+            meanKAM_FCC /= NFCC;
+            meanXCTrappedBCC /= NBCC;
+            meanXCTrappedFCC /= NFCC;
+            meanRhoBCC /= NBCC;
+            meanRhoFCC /= NFCC;
+            meanKappaBCC /= NBCC;
+            meanKappaFCC /= NFCC;
+            meanRhoBCC *= 1.e12;
+            meanRhoFCC *= 1.e12;
+
+            LOG_IF_F(INFO, NBCC > 0, "Just to check again, martensite, we have %d cells, and we have ave kam %e, cumulative kam %e, ave xcTrapped %e, cumulative xcTrapped %e : ", NBCC, meanKAM_BCC, meanKAM_BCC * NBCC, meanXCTrappedBCC, meanXCTrappedBCC * NBCC);
+            LOG_IF_F(INFO, NFCC > 0, "Just to check again, FCC, we have %d cells, and we have ave kam %e, cumulative kam %e, ave xcTrapped %e, cumulative xcTrapped %e : ", NFCC, meanKAM_FCC, meanKAM_FCC * NFCC, meanXCTrappedFCC, meanXCTrappedFCC * NFCC);
+            LOG_IF_F(INFO, (NBCC > 0 && mvUserSettings.mvReadDislocationDensity), "Just to check again, we read dislocation density from micro file, we have martensite, we have %d cells, and we have ave kam %e, cumulative kam %e, ave xcTrapped %e, cumulative xcTrapped %e, ave Rho %e, ave Kappa %e: ", NBCC, meanKAM_BCC, meanKAM_BCC * NBCC, meanXCTrappedBCC, meanXCTrappedBCC * NBCC, meanRhoBCC, meanKappaBCC);
+            LOG_IF_F(INFO, (NBCC > 0 && !mvUserSettings.mvReadDislocationDensity && !mvUserSettings.mvReadOnlyFreeDislocationDensity), "Just to check again, we calculated here dislodensity from kam, we have martensite, we have %d cells, and we have ave kam %e, cumulative kam %e, ave xcTrapped %e, cumulative xcTrapped %e, ave Rho %e, ave Kappa %e: ", NBCC, meanKAM_BCC, meanKAM_BCC * NBCC, meanXCTrappedBCC, meanXCTrappedBCC * NBCC, meanRhoBCC, meanKappaBCC);
+           LOG_IF_F(INFO, (NBCC > 0 && !mvUserSettings.mvReadDislocationDensity && mvUserSettings.mvReadOnlyFreeDislocationDensity), "Just to check again, we read statistically stored dislocation density and added / calculated here dislodensity from kam, we have martensite, we have %d cells, and we have ave kam %e, cumulative kam %e, ave xcTrapped %e, cumulative xcTrapped %e, ave Rho %e, ave Kappa %e: ", NBCC, meanKAM_BCC, meanKAM_BCC * NBCC, meanXCTrappedBCC, meanXCTrappedBCC * NBCC, meanRhoBCC, meanKappaBCC);
+            LOG_IF_F(INFO, NFCC > 0, "Just to check again, austenite, we have %d cells, and we have ave kam %e, cumulative kam %e, ave xcTrapped %e, cumulative xcTrapped %e, ave Rho %e, ave Kappa %e: ", NFCC, meanKAM_FCC, meanKAM_FCC * NFCC, meanXCTrappedFCC, meanXCTrappedFCC * NFCC, meanRhoFCC, meanKappaFCC);
+        }
+    }
+
+    BoundaryEnergyInGrid *= 0.5; // to correct double counting
+    float BoundaryEnergyInGridPerCell = BoundaryEnergyInGrid / mvpStateVars->mvN;
+    LOG_F(INFO, "Ncells %d A/v %g", mvpStateVars->mvN, mvpStateVars->mvMaxBoundaryAreaPerVol);
+    LOG_F(INFO, "sigma %g TotalBoundEnergyInGrid %g and per cell %g maxmis %g", mvUserSettings.mvGrainBoundaryEnergy, BoundaryEnergyInGrid * mvpStateVars->mvMaxBoundaryAreaPerVol, BoundaryEnergyInGridPerCell * mvpStateVars->mvMaxBoundaryAreaPerVol, maxmis);
+    LOG_F(INFO, "Finished settings properties for rex, gg, diffusion");
+    mvpStateVars->eraseKAM();
+    return BoundaryEnergyInGridPerCell;
+}
+
+
+
+
+void Microstructure::SetStateVariablesForHydrogen()
+{
+    NcellsForCarbonPart = mvpStateVars->mvNNearest;
+    LOG_F(INFO, "Setting state variables of full-field simulation of hydrogen redistribution");
+
+    double tolerance = 1e-6;
+ 
+
+
+    int nbrList1Temp[26];
+    float maxmis = 0.;
+    double mis;
+    int BCells = 0;
+    Eigen::Vector3f ea1, ea2;
+
+    //    Eigen::Vector3f CSL19a,CSL21a,CSL27a;
+    Eigen::Quaternionf q;
+
+    if (mvUserSettings.mvHasSoluteDiffusion && !mvpStateVars->mvpDiffusivitySolute_Ratio)
+    {
+        LOG_F(WARNING, " strange - you have full diffusion yet the mvpDiffusivitySolute_Ratio is not initialized - i initialize it now but TAKE CARE (IT IS PART OF Ax=B system in CGsolver)");
+        mvpStateVars->mvpDiffusivitySolute_Ratio = new double[mvpStateVars->mvN * mvpStateVars->mvNNearest]; // although it only matters for having different diffusivities (e.g. Agren, or solving martensite-austenite), the way the Ax=b code is written now  needs the Diff matrix (i.e. it is part of A matrix, and takes values of 1 if all diffusivities are equal (i.e. equal to the maxdiffusivity))
+        std::memset(mvpStateVars->mvpDiffusivitySolute_Ratio, 1., mvpStateVars->mvN * mvpStateVars->mvNNearest);
+    }
+    if (mvUserSettings.mvHasSoluteDiffusion && !mvpStateVars->mvpKappaFactorForSoluteTrappedDefects)
+    {
+        LOG_F(WARNING, " strange - you have full diffusion yet the kappaFactorForCdefects is not initialized - i initialize it now but TAKE CARE (IT IS PART OF Ax=B system in CGsolver)");
+        mvpStateVars->mvpKappaFactorForSoluteTrappedDefects = new double[mvpStateVars->mvN]; // although it only matters for Csegregation to defects, the way the code is writtem now whole Cdiffusion step is solved
+        std::memset(mvpStateVars->mvpKappaFactorForSoluteTrappedDefects, 0., mvpStateVars->mvN);
+    }
+
+    for (int i = 0; i < mvpStateVars->mvN; i++)
+    {
+        if (!mvUserSettings.mvReadDislocationDensity && !mvUserSettings.mvReadOnlyFreeDislocationDensity)
+            mvpStateVars->mvpRho[i] = 1.e12;
+
+        if (mvUserSettings.mvIsTestRVE)
+        {
+            mvpStateVars->mvpHasNeighNonInd[i] = 0;
+            mvpStateVars->mvpCI[i] = 1.;
+            mvpStateVars->mvpRX[i] = 1.;
+        }
+        mvpStateVars->mvpKAM[i] = 0.;
+
+   
+    }
+
+
+
+    double meanKAM_FCC = 0.;
+    double meanKAM_BCC = 0.;
+    int NFCC = 0;
+    int NBCC = 0;
+    int numberInterphases = 0;
+
+    // This loop will determine which cell's orientation (and neighborhood's misorientations) are
+    // trustful enough (useful for EBSD inputs) to allow growth or rex to initiate there (also boundary cells cannot - there is no HAGB in reality)
+    // Also, some quantities for determining later start here
+    for (int i = 0; i < mvpStateVars->mvN; i++)
+    {
+        mvpStateVars->mvpKAM[i] = 0.;
+        if (mvpStateVars->IsCellBCC(i))
+            NBCC++;
+        if (mvpStateVars->IsCellFCC(i))
+            NFCC++;
+        if (!mvUserSettings.mvAllowPeriodicBoundConditions && mvpStateVars->mvpBoundaryCell[i])
+            continue;
+
+        mvpStateVars->GetNeighbourCellOffsets(i, nbrList1Temp);
+        float NNeighs = 0.;
+        bool CellIsHAGB = false;
+
+        for (int nbr = 0; nbr < mvpStateVars->mvNAll; nbr++)
+        {
+if (mvpStateVars->GetDistanceBetweenCellsNoPerodic(i, nbrList1Temp[nbr]) > 3.* mvpStateVars->mvDx ) {
+    // LOG_F(INFO," No mis between %d and %d ", i,nbrList1Temp[nbr] );
+    continue; }// it means not reAL NEIGHBOURS
+            // if (mvpStateVars->mvpLatticeId[nbrList1Temp[nbr]] != mvpStateVars->mvpLatticeId[i]) // Interphase mis doesnt contribute to average mis
+            //     continue;
+                        NNeighs += 1.;
+
+
+            int OriId1 = mvpStateVars->GetOriIdOfCell(i);
+            ea1 = mvOrientations.GetEulerAngles(OriId1);
+            int OriId2 = mvpStateVars->GetOriIdOfCell(nbrList1Temp[nbr]);
+            ea2 = mvOrientations.GetEulerAngles(OriId2);
+   
+            if (ea1[0] == ea2[0] && ea1[1] == ea2[1] && ea1[2] == ea2[2])
+                continue;
+            if (mvpStateVars->mvpCI[nbrList1Temp[nbr]] < mvUserSettings.mvMinimumCI || mvpStateVars->mvpCI[i] < mvUserSettings.mvMinimumCI)
+                continue;
+
+            if (mvpStateVars->mvpLatticeId[nbrList1Temp[nbr]] != mvpStateVars->mvpLatticeId[i])
+            {
+                // Interphase mis doesnt contribute to average mis
+                numberInterphases++;
+                continue;
+            }
+//         if (mvUserSettings.mvReadOriId && OriId1!=OriId2){
+//      CellIsHAGB = true;
+//             break;
+//    }
+    int CSLRelationship;
+
+            mis = MisorientationBetweenCells(i, nbrList1Temp[nbr], true, false, mvUserSettings.mvIncludeCSL19FastGrowth, &CSLRelationship);
+                            if (mvUserSettings.mvReadOriId && OriId1==OriId2 && mis > 0.95 * mvUserSettings.mvHAGB) {
+                                LOG_F(ERROR,"Your simulation wont make sanse - you have neighbour pixels with misorientation more than your HAGB threshold, and you want them to be considered as same grain - Go to input file and change either your HAGB (if too low) or set the ReadOriId option to zero - the memory increases and simulation time but at least we know your orientations / grains correctly ");
+                                LOG_F(ERROR,"Pixel index %d with neighbour %d have grain id %d and %d and ea phi1 %f and ea phi 1 %f and ea phi %f and ea phi %f and ea phi2%f and ea phi 2 %f ", i,nbrList1Temp[nbr],OriId1,OriId2,ea1[0],ea2[0],ea1[1],ea2[1],ea1[2],ea2[2]);
+
+                                exit(-1);
+                            }
+                                 if (mvUserSettings.mvReadOriId && OriId1!=OriId2 && mis <  mvUserSettings.mvLowerMisorientationCutOff) {
+                                LOG_F(ERROR,"Your simulation wont make sanse - you have neighbour pixels with misorientation less than HAGB threshold, and you want them to be considered as different grain - Go to input file and change either your HAGB (if too low) or set the ReadOriId option to zero - the memory increases and simulation time but at least we know your orientations / grains correctly ");
+                                LOG_F(ERROR,"Pixel index %d with neighbour %d have grain id %d and %d and ea phi1 %f and ea phi 1 %f and ea phi %f and ea phi %f and ea phi2%f and ea phi 2 %f ", i,nbrList1Temp[nbr],OriId1,OriId2,ea1[0],ea2[0],ea1[1],ea2[1],ea1[2],ea2[2]);
+
+                                exit(-1);
+                            }
+            if (mis >= mvUserSettings.mvLowerMisorientationCutOff)
+            {
+                mvpStateVars->mvpKAM[i] += mis;
+                if (mis >= 0.95 * mvUserSettings.mvHAGB){
+                    CellIsHAGB = true;
+                    break;
+                }
+            }
+        }
+        if (CellIsHAGB)   {
+        mvpStateVars->mvpKAM[i] = mvUserSettings.mvHAGB;
+        }
+        else    
+         {
+    mvpStateVars->mvpKAM[i] = 0.;
+        }
+//   mvpStateVars->mvpKAM[i] /= NNeighs;
+// if (mvpStateVars->mvpKAM[i] > 0.3 *  mvUserSettings.mvHAGB) mvpStateVars->mvpKAM[i] = mvUserSettings.mvHAGB;
+// else mvpStateVars->mvpKAM[i] = 0.;
+
+        if (mvpStateVars->IsCellFCC(i))
+        {
+            meanKAM_FCC += mvpStateVars->mvpKAM[i];
+        }
+        if (mvpStateVars->IsCellBCC(i))
+        {
+            meanKAM_BCC += mvpStateVars->mvpKAM[i];
+        }
+    }
+
+    if (NBCC > 0)
+        LOG_IF_F(INFO, NBCC > 0, "Calculated BCC: %d cells in, we have ave kam %e cumulative kam %e ", NBCC, meanKAM_BCC / NBCC, meanKAM_BCC);
+
+    if (NFCC > 0)
+        LOG_IF_F(INFO, NFCC > 0, "Calculated FCC: %d cells in, we have ave kam %e cumulative kam %e ", NFCC, meanKAM_FCC / NFCC, meanKAM_FCC);
+
+    meanKAM_BCC /= NBCC;
+    meanKAM_FCC /= NFCC;
+    // std::cout<<" all fine 11 "<<std::endl;
+
+        for (int i = 0; i < mvpStateVars->mvN; i++)
+        {
+           if (!mvUserSettings.mvIsHydrogenSource && !mvUserSettings.mvReadSoluteConcentration) (*mvpStateVars->mvpXC)[i] = mvUserSettings.mvAverageHydrogen;
+            // std::cout<<" all fine 111 "<<std::endl;
+
+            if (mvUserSettings.mvSoluteSegregationDislocations)
+            {
+                (*mvpStateVars->mvpXCTrapped)[i] = 0.;
+                mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i] = 0.;
+            }
+
+      
+            // std::cout<<" all fine 2 "<<std::endl;
+
+            // if orientations are per cell then kam is going to be recalculated later and so dislospacing and number. Otherwise we keep the KAM as read.
+            if (mvUserSettings.mvSoluteSegregationDislocations)
+            {
+                if (!mvUserSettings.mvReadDislocationDensity || mvUserSettings.mvReadOnlyFreeDislocationDensity)
+                {
+                    // mvpStateVars->mvpKAM[i] *= 10.0;
+                    float b = (mvpStateVars->IsCellFCC(i) ? mvUserSettings.mvBurgersVectorFCC : mvUserSettings.mvBurgersVectorBCC);
+                    b *= 1.e6; // IN MICROMETER
+                    float disloTypeCoeff = 3.;
+                    double rho = disloTypeCoeff * mvpStateVars->mvpKAM[i] * 0.0175 / b / mvpStateVars->mvDx / 1.e6; // IN 1/SQUARE MICROMETER
+                //    std::cout<<" rho is "<<rho<<std::endl;
+                   if ( mvUserSettings.mvReadOnlyFreeDislocationDensity) mvpStateVars->mvpRho[i] += rho * 1.e12;   
+                   else mvpStateVars->mvpRho[i] = rho * 1.e12;   
+
+                   if (mvpStateVars->mvpRho[i] < 1.e12) mvpStateVars->mvpRho[i] = 1.e12;
+
+                                                                     // IN 1/SQUARE METER
+                }
+
+                       double GB_ratio = (mvpStateVars->IsCellFCC(i)) ?  1.15 : 1.15 * 100;
+                       // the above numbers are for 1 um mesh size
+                        double step_size = mvpStateVars->mvDx * 1.e6; // in micrometer
+                        GB_ratio /= step_size;
+                mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i] = GB_ratio * mvpStateVars->mvpKAM[i] / mvUserSettings.mvHAGB;
+                if (mvpStateVars->IsCellMartensite(i)) mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i] += GB_ratio / 6.;
+
+                // LOG_F(INFO,"Cell with KAM %g and lattice %d has enrichment ratio %g",mvpStateVars->mvpKAM[i],mvpStateVars->GetLatticeIdOfCell(i),mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[i]);
+                
             }
         }
         // std::cout<<" all fine 3 "<<std::endl;
@@ -1745,17 +2510,19 @@ float Microstructure::SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralSt
             LOG_IF_F(INFO, (NBCC > 0 && !mvUserSettings.mvReadDislocationDensity), "Just to check again, we calculated here dislodensity from kam, we have martensite, we have %d cells, and we have ave kam %e, cumulative kam %e, ave xcTrapped %e, cumulative xcTrapped %e, ave Rho %e, ave Kappa %e: ", NBCC, meanKAM_BCC, meanKAM_BCC * NBCC, meanXCTrappedBCC, meanXCTrappedBCC * NBCC, meanRhoBCC, meanKappaBCC);
             LOG_IF_F(INFO, NFCC > 0, "Just to check again, austenite, we have %d cells, and we have ave kam %e, cumulative kam %e, ave xcTrapped %e, cumulative xcTrapped %e, ave Rho %e, ave Kappa %e: ", NFCC, meanKAM_FCC, meanKAM_FCC * NFCC, meanXCTrappedFCC, meanXCTrappedFCC * NFCC, meanRhoFCC, meanKappaFCC);
         }
-    }
+    
 
-    BoundaryEnergyInGrid *= 0.5; // to correct double counting
-    float BoundaryEnergyInGridPerCell = BoundaryEnergyInGrid / mvpStateVars->mvN;
-    LOG_F(INFO, "Ncells %d A/v %g", mvpStateVars->mvN, mvpStateVars->mvMaxBoundaryAreaPerVol);
-    LOG_F(INFO, "sigma %g TotalBoundEnergyInGrid %g and per cell %g maxmis %g", mvUserSettings.mvGrainBoundaryEnergy, BoundaryEnergyInGrid * mvpStateVars->mvMaxBoundaryAreaPerVol, BoundaryEnergyInGridPerCell * mvpStateVars->mvMaxBoundaryAreaPerVol, maxmis);
-    LOG_F(INFO, "Finished settings properties for rex, gg, diffusion");
-    mvpStateVars->eraseKAM();
-    return BoundaryEnergyInGridPerCell;
+if (mvUserSettings.mvIsHydrogenSource){
+        TimeEvolForUncharging.push_back(0.);
+    InFlow.push_back(0.);
+    OutFlowLeft.push_back(0.);
+    OutFlowRight.push_back(0.);
+
 }
-
+    LOG_F(INFO, "Finished settings properties hydrogen redistribution");
+    mvpStateVars->eraseKAM();
+    return;
+}
 
 double Microstructure::GetBoundaryEnergyForThisMisorientation(double mis)
 {
@@ -1921,6 +2688,7 @@ double Microstructure::GetAreaPerVolumeOfBoundary(int index1, int index2)
  */
 float Microstructure::CalcReorientationRatesForFullFieldRexOrGG(int latticeId)
 {
+    int carbides = 0;
     int index, indexNbrToGrow, indexNbrOther, indexDragged;
     int lall[26];
     int lall2[26];
@@ -1958,6 +2726,8 @@ float Microstructure::CalcReorientationRatesForFullFieldRexOrGG(int latticeId)
 
     for (int index : interfaceIndices)
     {
+
+
         if (mvpStateVars->GetLatticeIdOfCell(index) != latticeId)
             continue;
         iCells++;
@@ -1984,6 +2754,8 @@ float Microstructure::CalcReorientationRatesForFullFieldRexOrGG(int latticeId)
         for (int nbr = 0; nbr < NNeighbours; nbr++)
         {
             indexNbrToGrow = lall[nbr];
+            if (mvpStateVars->GetLatticeIdOfCell(indexNbrToGrow) != latticeId)
+            continue;
             OriIdToGrow = mvpStateVars->GetOriIdOfCell(indexNbrToGrow);
             mis[nbr][nbr] = 0.;
 
@@ -2041,6 +2813,8 @@ float Microstructure::CalcReorientationRatesForFullFieldRexOrGG(int latticeId)
             TotalForceZ_PerVol = 0.;
 
             indexNbrToGrow = lall[nbr];
+            if (mvpStateVars->GetLatticeIdOfCell(indexNbrToGrow) != latticeId)
+            continue;
             if (!mvUserSettings.mvAllowPeriodicBoundConditions && (fabs(mvpStateVars->GetXFromIndex(index) - mvpStateVars->GetXFromIndex(indexNbrToGrow)) > 5. * mvpStateVars->mvDx || fabs(mvpStateVars->GetYFromIndex(index) - mvpStateVars->GetYFromIndex(indexNbrToGrow)) > 5. * mvpStateVars->mvDx))
                 continue;
 
@@ -2111,6 +2885,7 @@ float Microstructure::CalcReorientationRatesForFullFieldRexOrGG(int latticeId)
 
             fDot = TotalForceForReOrientationPerVol * MobilityOfBoundaries;
             fDot *= BetaFactorForInterfaceMigrationRates;
+            // std::cout<<" fDot "<<fDot<<std::endl;
             if (mvUserSettings.mvIncludeCSL19FastGrowth && mvpStateVars->mvpCSLRelationshipNow[index] == 0)
                 fDot *= 0.1;
 
@@ -2170,6 +2945,8 @@ int Microstructure::ReOrientCellsForFullFieldRexOrGG(int latticeId)
             if (mvpStateVars->mvpRX[index] == 0)
                 frx++;
             int indexThatGrew = mvpStateVars->mvpOneOfTheNeighboursGrowingInto[index];
+            if (mvpStateVars->GetLatticeIdOfCell(mvpStateVars->mvpOneOfTheNeighboursGrowingInto[index]) == 5) LOG_F(WARNING," cell growing with rate %g , is in phase %d", mvpStateVars->mvpConsumptionRate[index], mvpStateVars->GetLatticeIdOfCell(mvpStateVars->mvpOneOfTheNeighboursGrowingInto[index]));
+            if (mvpStateVars->GetLatticeIdOfCell(index) != mvpStateVars->GetLatticeIdOfCell(mvpStateVars->mvpOneOfTheNeighboursGrowingInto[index])) ABORT_F("I found dissimilar phases between growing and consumed cell, whereas we are in recrystallisation (not phase transformation))");
             SwitchCell(index, indexThatGrew, true);
             reoriented++;
             ConsumedCellsInStepBySamePhase.push_back(index);
@@ -2457,21 +3234,187 @@ double Microstructure::CalculateDiffusivityMatrixAndReturnMaxDiffusivityInStep()
 }
 
 
+std::vector<std::pair<double, double>> Microstructure::ReadInflowRateProfile(const std::string& filename) {
+    std::ifstream infile(filename);
+    std::vector<std::pair<double, double>> inflowData;
+
+    if (!infile.is_open()) {
+        LOG_F(ERROR, "Could not open file: %s", filename.c_str());
+        return inflowData;
+    }
+
+    std::string line;
+    std::getline(infile, line); // Skip the first line (header)
+
+    double time, dummy1, inflow1, inflow2;
+
+    double previousTotalInFlow = 0.;
+    while (std::getline(infile, line)) {
+        std::istringstream iss(line);
+        if (!(iss >> time >> dummy1 >> inflow1 >> inflow2)) {
+            LOG_F(WARNING, "Invalid line in InflowRate.txt: %s", line.c_str());
+            continue;
+        }
+    
+        double currentTotalInflow = inflow1 + inflow2;
+        currentTotalInflow /= 4.;
+        double incrementalInflow = currentTotalInflow - previousTotalInFlow;
+        previousTotalInFlow = currentTotalInflow;
+    
+        double totalInflowPerCell = incrementalInflow ;
+    
+        inflowData.emplace_back(time, totalInflowPerCell);
+        LOG_F(WARNING, "time : %.5f, hydrogen %.8e", time, totalInflowPerCell);
+    }
+    
+
+    return inflowData;
+}
+
+
+void Microstructure::ChargeTheRVEFromInflowFile(const std::vector<std::pair<double, double>>& inflowData) {
+    // Find matching inflow rate for current mvTime
+    double currentRate = 0.0;
+    int ny = mvUserSettings.mvNy;
+    int nz = mvUserSettings.mvNz;
+    int SurfaceCells = ny * nz;
+    for (const auto& entry : inflowData) {
+        if (mvTime < entry.first) break;
+        currentRate = entry.second;
+    }
+
+    SoluteLeavingLeftInStep = 0.;
+    SoluteLeavingRightInStep = 0.;
+    SoluteEnteringInStep = 0.;
+
+    for (int index = 0; index < mvpStateVars->mvN; index++) {
+        std::array<int, 3> coord = mvpStateVars->GetIJKFromIndex(index);
+        if (coord[0] == mvpStateVars->mvNx / 2 || coord[0] == mvpStateVars->mvNx / 2 - 1) {
+            double amountHydrogen = currentRate / SurfaceCells;
+            // double diff = (mvpStateVars->IsCellFCC(index)) ? mvpTCK->GetHydrogenDiffusivityInFCC() : mvpTCK->GetHydrogenDiffusivityInBCC();
+            // double RateIn = mvUserSettings.mvTimeStep * diff / mvpStateVars->mvDx / mvpStateVars->mvDx;
+            double HydrogenBefore = (*mvpStateVars->mvpXC)[index];
+            (*mvpStateVars->mvpXC)[index] += amountHydrogen ;
+
+            SoluteEnteringInStep += (*mvpStateVars->mvpXC)[index];
+            SoluteEnteringInStep -= HydrogenBefore;
+        }
+
+    if (coord[0] == mvpStateVars->mvNx - 1 &&  (*mvpStateVars->mvpXC)[index]  > 1.e-7) {
+        // LOG_F(WARNING, " reached right edge with %g ", (*mvpStateVars->mvpXC)[index]);
+    //   double XC_To_remove = (*mvpStateVars->mvpXC)[index] - (*mvpStateVars->mvpXCTrapped)[index];
+      double XC_To_remove = (*mvpStateVars->mvpXC)[index];
+    
+     double diff = (mvpStateVars->IsCellFCC(index)) ? mvpTCK->GetHydrogenDiffusivityInFCC() : mvpTCK->GetHydrogenDiffusivityInBCC();
+      double RateOut = diff * mvUserSettings.mvTimeStep / mvpStateVars->mvDx / mvpStateVars->mvDx;
+    
+      (*mvpStateVars->mvpXC)[index] -= RateOut * XC_To_remove ;
+      SoluteLeavingRightInStep += RateOut *  XC_To_remove ;
+        }
+        if (coord[0] == 0 &&  (*mvpStateVars->mvpXC)[index]  > 1.e-7) {
+        // LOG_F(WARNING, " reached left edge with %g ", (*mvpStateVars->mvpXC)[index]);
+    //   double XC_To_remove = (*mvpStateVars->mvpXC)[index] - (*mvpStateVars->mvpXCTrapped)[index];
+      double XC_To_remove = (*mvpStateVars->mvpXC)[index];
+    
+     double diff = (mvpStateVars->IsCellFCC(index)) ? mvpTCK->GetHydrogenDiffusivityInFCC() : mvpTCK->GetHydrogenDiffusivityInBCC();
+     double RateOut = diff * mvUserSettings.mvTimeStep / mvpStateVars->mvDx / mvpStateVars->mvDx;
+    
+     (*mvpStateVars->mvpXC)[index] -= RateOut * XC_To_remove ;
+      SoluteLeavingLeftInStep += RateOut *  XC_To_remove;
+    
+    
+    
+        }
+    }
+
+    mvpStateVars->SetCarbonTrappedAndCarbonFreeForGivenXcTot();
+
+    TimeEvolForUncharging.push_back(mvTime);
+    double TotIn = InFlow[InFlow.size()-1] + SoluteEnteringInStep;
+  double TotOutLeft = OutFlowLeft[OutFlowLeft.size()-1] + SoluteLeavingLeftInStep;
+  double TotOutRight = OutFlowRight[OutFlowRight.size()-1] + SoluteLeavingRightInStep;
+  
+      InFlow.push_back(TotIn);
+  
+      OutFlowLeft.push_back(TotOutLeft);
+          OutFlowRight.push_back(TotOutRight);
+          LOG_F(INFO,"Time %g, inflow tot %g, ouflow tot %g",mvTime, TotIn, TotOutLeft+TotOutRight);
+
+}
+
+
 
 void Microstructure::ChargeTheRVE()
 {
+    SoluteLeavingLeftInStep = 0.;
+        SoluteLeavingRightInStep = 0.;
+
+        SoluteEnteringInStep = 0.;
     for (int index = 0; index < mvpStateVars->mvN; index++)
     {
       std::array<int, 3> coord =  mvpStateVars->GetIJKFromIndex(index);
-if (coord[0] == mvpStateVars->mvNx - 1) {
-    (*mvpStateVars->mvpXC)[index] = 0.2 * mvUserSettings.mvAverageCarbon;
-        (*mvpStateVars->mvpXCTrapped)[index] = 0.;
+if (coord[0] == mvpStateVars->mvNx / 2 || coord[0] == mvpStateVars->mvNx / 2 - 1) {
+    double amountHydrogen = mvUserSettings.mvHydrogenSourceConcentration ;
+double diff = (mvpStateVars->IsCellFCC(index)) ? mvpTCK->GetHydrogenDiffusivityInFCC() : mvpTCK->GetHydrogenDiffusivityInBCC();
+ double RateIn = mvUserSettings.mvTimeStep * diff / mvpStateVars->mvDx / mvpStateVars->mvDx;
+double HydrogenBefore = (*mvpStateVars->mvpXC)[index];
+if (mvUserSettings.mvIsHydrogenConstantFlux)
+    (*mvpStateVars->mvpXC)[index]  +=  amountHydrogen * RateIn;
+else
+    (*mvpStateVars->mvpXC)[index]  =  amountHydrogen;
 
-  mvpStateVars->mvpRho[index] = 0.;
-    mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[index] = 0.;
+    SoluteEnteringInStep +=  (*mvpStateVars->mvpXC)[index];
+   SoluteEnteringInStep -= HydrogenBefore;
+        // (*mvpStateVars->mvpXCTrapped)[index] = 0.;
+
+//   mvpStateVars->mvpRho[index] = 0.;
+    // mvpStateVars->mvpKappaFactorForSoluteTrappedDefects[index] = 0.;
 
 }
+if (coord[0] == mvpStateVars->mvNx - 1 &&  (*mvpStateVars->mvpXC)[index]  > 1.e-7) {
+    // LOG_F(WARNING, " reached right edge with %g ", (*mvpStateVars->mvpXC)[index]);
+//   double XC_To_remove = (*mvpStateVars->mvpXC)[index] - (*mvpStateVars->mvpXCTrapped)[index];
+  double XC_To_remove = (*mvpStateVars->mvpXC)[index];
+
+ double diff = (mvpStateVars->IsCellFCC(index)) ? mvpTCK->GetHydrogenDiffusivityInFCC() : mvpTCK->GetHydrogenDiffusivityInBCC();
+  double RateOut = diff * mvUserSettings.mvTimeStep / mvpStateVars->mvDx / mvpStateVars->mvDx;
+
+  (*mvpStateVars->mvpXC)[index] -= RateOut * XC_To_remove ;
+  SoluteLeavingRightInStep += RateOut *  XC_To_remove ;
     }
+    if (coord[0] == 0 &&  (*mvpStateVars->mvpXC)[index]  > 1.e-7) {
+    // LOG_F(WARNING, " reached left edge with %g ", (*mvpStateVars->mvpXC)[index]);
+//   double XC_To_remove = (*mvpStateVars->mvpXC)[index] - (*mvpStateVars->mvpXCTrapped)[index];
+  double XC_To_remove = (*mvpStateVars->mvpXC)[index];
+
+ double diff = (mvpStateVars->IsCellFCC(index)) ? mvpTCK->GetHydrogenDiffusivityInFCC() : mvpTCK->GetHydrogenDiffusivityInBCC();
+ double RateOut = diff * mvUserSettings.mvTimeStep / mvpStateVars->mvDx / mvpStateVars->mvDx;
+
+
+ if (mvUserSettings.mvIsHydrogenConstantFlux)
+ (*mvpStateVars->mvpXC)[index] -= RateOut * XC_To_remove ;
+else
+    (*mvpStateVars->mvpXC)[index]  =  0;
+
+  SoluteLeavingLeftInStep += RateOut *  XC_To_remove;
+
+
+
+    }
+}
+           mvpStateVars->SetCarbonTrappedAndCarbonFreeForGivenXcTot();
+
+  TimeEvolForUncharging.push_back(mvTime);
+  double TotIn = InFlow[InFlow.size()-1] + SoluteEnteringInStep;
+double TotOutLeft = OutFlowLeft[OutFlowLeft.size()-1] + SoluteLeavingLeftInStep;
+double TotOutRight = OutFlowRight[OutFlowRight.size()-1] + SoluteLeavingRightInStep;
+
+    InFlow.push_back(TotIn);
+
+    OutFlowLeft.push_back(TotOutLeft);
+        OutFlowRight.push_back(TotOutRight);
+
+
 }
 
 
@@ -2505,6 +3448,50 @@ void Microstructure::CalculateDiffusivityMatrixForImpurities(double maxDiffusivi
     return;
 }
 
+
+double Microstructure::CalculateDiffusivityMatrixForHydrogenAndReturnMaxDiffusivityInStep()
+{
+   double Diff1, Diff2;
+       int nbrList[26];
+double maxDiffusivityOfElement = 0.;
+double maxDiffusivityOfFCC = 0.;
+double maxDiffusivityOfBCC = 0.;
+
+    // NOW go calclate the ratio
+    for (int index = 0; index < mvpStateVars->mvN; index++)
+    {
+        mvpStateVars->GetNeighbourCellOffsets(index, nbrList);
+        // Diff1 = maxDiffusivityOfElement;
+       Diff1 = (mvpStateVars->IsCellFCC(index)) ? mvpTCK->GetHydrogenDiffusivityInFCC() :  mvpTCK->GetHydrogenDiffusivityInBCC();
+        for (int nbr = 0; nbr < mvpStateVars->mvNNearest; nbr++)
+        {
+                   Diff2 = (mvpStateVars->IsCellFCC(nbrList[nbr])) ? mvpTCK->GetHydrogenDiffusivityInFCC() :  mvpTCK->GetHydrogenDiffusivityInBCC();
+                mvpStateVars->mvpDiffusivitySolute_Ratio[mvpStateVars->mvNNearest * index + nbr] = 1.; // for i and nbr in dissimilar phases it doesnt matter what we set in rhe Diffusivity matrix (they wont be considered - AX=b is only solved for phase-same elements)
+
+                // Diff2 = maxDiffusivityOfElement;
+        double PairDiffusivity = Diff1 + Diff2;
+        PairDiffusivity /= 2.;
+        // if (mvpStateVars->mvpLatticeId[index]!=mvpStateVars->mvpLatticeId[nbrList[nbr]]) PairDiffusivity = maxDiffusivityOfElement;
+        mvpStateVars->mvpDiffusivitySolute_Ratio[mvpStateVars->mvNNearest * index + nbr] = PairDiffusivity;
+if (maxDiffusivityOfElement < PairDiffusivity) maxDiffusivityOfElement = PairDiffusivity;
+if (maxDiffusivityOfFCC < PairDiffusivity && mvpStateVars->IsCellFCC(index)  && mvpStateVars->IsCellFCC(nbrList[nbr]))  maxDiffusivityOfFCC = PairDiffusivity;
+if (maxDiffusivityOfBCC < PairDiffusivity && mvpStateVars->IsCellBCC(index)  && mvpStateVars->IsCellBCC(nbrList[nbr]))  maxDiffusivityOfBCC = PairDiffusivity;
+
+        }
+    }
+       for (int index = 0; index < mvpStateVars->mvN; index++){
+   for (int nbr = 0; nbr < mvpStateVars->mvNNearest; nbr++){
+        mvpStateVars->mvpDiffusivitySolute_Ratio[mvpStateVars->mvNNearest * index + nbr] /= maxDiffusivityOfElement;
+   }
+       }
+    LOG_F(INFO, "Finished setting diffusivity ratio matrix of hydrogen with phases, max diffusivity is equal to %g", maxDiffusivityOfElement);
+        LOG_F(INFO, "Max diffusivity in BULK FCC is equal to %g and in BULK BCC %g", maxDiffusivityOfFCC,maxDiffusivityOfBCC);
+
+        LOG_F(INFO, "This means that max Rate factor is %e", maxDiffusivityOfElement * mvUserSettings.mvTimeStep / mvpStateVars->mvDx / mvpStateVars->mvDx);
+       LOG_IF_F(WARNING, maxDiffusivityOfElement * mvUserSettings.mvTimeStep / mvpStateVars->mvDx / mvpStateVars->mvDx > 1., "Careful with your rate factor  >1 ,i.e.is %e", maxDiffusivityOfElement * mvUserSettings.mvTimeStep / mvpStateVars->mvDx / mvpStateVars->mvDx);
+
+    return maxDiffusivityOfElement;
+}
 
 
 float Microstructure::CalcConsumptionRatesInterfaceMigrationDuringPartitioning()
@@ -3107,6 +4094,8 @@ bool Microstructure::IsCellIndeedInterface(int index)
     for (int nbr = 0; nbr < mvpStateVars->mvNAll; nbr++)
     {
         indexNbr = NbrList[nbr];
+                    if (mvUserSettings.mvIsHydrogen && mvpStateVars->GetDistanceBetweenCellsNoPerodic(index,indexNbr) > 3.* mvpStateVars->mvDx ) continue; // it means not reAL NEIGHBOURS
+
         if (mvpStateVars->GetOriIdOfCell(index) == mvpStateVars->GetOriIdOfCell(indexNbr))
             continue;
         float mis = MisorientationBetweenCells(index, indexNbr, true, false, false, &CSLRelationship);
@@ -3364,7 +4353,7 @@ void Microstructure::CarbonTemporalOverallQuantitiesForLaterAnalysis()
 
         XsnTotFCC /= TotMoleFracFCC;
     XsnTotBCC /= TotMoleFracBCC;
-    LOG_F(INFO, " Right before C diffusion step, at time %e seconds, I have average C %e , in my %d BCC ICells, and I have average C %e, in my %d FCC ICells ", mvTimeStep, XcBCCInt, NBCCInt, XcFCCInt, NFCCInt);
+    LOG_F(INFO, " Right before C diffusion step, at time %e seconds, I have average C %e , in my %d BCC ICells, and I have average C %e, in my %d FCC ICells ", mvTime, XcBCCInt, NBCCInt, XcFCCInt, NFCCInt);
     LOG_F(INFO, " Now for %d BCC cells I have average C %e , and dispersion XC %e ", CellsBCC, XcTotBCC, DispersionCarbonBCC);
     LOG_F(INFO, " Now for %d FCC cells I have average C %e , and dispersion XC %e ", CellsFCC, XcTotFCC, DispersionCarbonFCC);
     LOG_F(INFO, " I also have in the whole RVE average C %e , average XC kappa factor  %e , and total Xc trapped from overall %e ", XcTot, XcKappaFactor, XcTotTrapped);
@@ -3376,6 +4365,141 @@ void Microstructure::CarbonTemporalOverallQuantitiesForLaterAnalysis()
         LOG_F(INFO," Sn conc tot %e , in BCC %e, in FCC %e ",XsnTot,XsnTotBCC,XsnTotFCC);
 
 }
+
+
+
+void Microstructure::HydrogenTemporalOverallQuantitiesForLaterAnalysis()
+{
+
+
+    TimeEvol.push_back(mvTime);
+    FCC_XC.push_back(0.);
+    BCC_XC.push_back(0.);
+    FCC_TrappedXC.push_back(0.);
+    BCC_TrappedXC.push_back(0.);
+    double XcTot = 0.;
+    double XcTotTrapped = 0.;
+    double XcKappaFactor = 0.;
+    double XcTotTrappedBCC = 0.;
+    double XcTotTrappedFCC = 0.;
+    double XcKappaFactorBCC = 0.;
+    double XcKappaFactorFCC = 0.;
+    double XcTotBCC = 0.;
+    double XcTotFCC = 0.;
+
+    int CellsBCC = 0;
+    int CellsFCC = 0;
+    int NBCCInt = 0;
+    int NFCCInt = 0;
+    double TotMoleFrac = 0.;
+    double TotMoleFracFCC = 0.;
+    double TotMoleFracBCC = 0.;
+    double MoleFracOfCell = 1.;
+
+    for (int i = 0; i < mvpStateVars->mvN; i++)
+    {
+        MoleFracOfCell = 1.;
+        if (mvUserSettings.mvConsiderConstantIronAtomsPerCell)
+            MoleFracOfCell = (1. - mvUserSettings.mvAverageHydrogen) / (1. - (*mvpStateVars->mvpXC)[i]);
+
+        XcTot += MoleFracOfCell * (*mvpStateVars->mvpXC)[i];
+        TotMoleFrac += MoleFracOfCell;
+        if (mvUserSettings.mvSoluteSegregationDislocations)
+        {
+            XcKappaFactor += mvpStateVars->GetKappaFactorForCTrappedInCell(i);
+            XcTotTrapped += MoleFracOfCell * mvpStateVars->GetXCTrappedInCell(i);
+        }
+        //                std::cout<<"time "<<mvTime<<" mvpStateVars->mvpXcDislo[i] "<<mvpStateVars->mvpXcDislo[i]<<" mvpStateVars->mvpCellFractionClustered[i] "<<mvpStateVars->mvpCellFractionClustered[i]<<std::endl;
+        if (mvpStateVars->IsCellBCC(i))
+        {
+            CellsBCC++;
+            TotMoleFracBCC += MoleFracOfCell;
+            XcTotBCC += MoleFracOfCell * (*mvpStateVars->mvpXC)[i];
+
+            if (mvUserSettings.mvSoluteSegregationDislocations)
+            {
+                XcKappaFactorBCC += mvpStateVars->GetKappaFactorForCTrappedInCell(i);
+                XcTotTrappedBCC += MoleFracOfCell * mvpStateVars->GetXCTrappedInCell(i);
+            }
+        }
+        if (mvpStateVars->IsCellFCC(i))
+        {
+            CellsFCC++;
+            TotMoleFracFCC += MoleFracOfCell;
+            XcTotFCC += MoleFracOfCell * (*mvpStateVars->mvpXC)[i];
+            if (mvUserSettings.mvSoluteSegregationDislocations)
+            {
+                XcKappaFactorFCC += mvpStateVars->GetKappaFactorForCTrappedInCell(i);
+                XcTotTrappedFCC += MoleFracOfCell * mvpStateVars->GetXCTrappedInCell(i);
+            }
+        }
+ 
+    }
+
+
+    XcTot /= TotMoleFrac;
+    XcTotTrapped /= TotMoleFrac;
+    XcKappaFactor /= mvpStateVars->mvN;
+
+    XcTotFCC /= TotMoleFracFCC;
+    XcTotBCC /= TotMoleFracBCC;
+
+    XcKappaFactorFCC /= CellsFCC;
+    XcKappaFactorBCC /= CellsBCC;
+    XcTotTrappedFCC /= TotMoleFracFCC;
+    XcTotTrappedBCC /= TotMoleFracBCC;
+
+    FCC_XC[FCC_XC.size() - 1] = XcTotFCC;
+    BCC_XC[BCC_XC.size() - 1] = XcTotBCC;
+
+
+    FCC_TrappedXC[FCC_TrappedXC.size() - 1] = XcTotTrappedFCC;
+    BCC_TrappedXC[BCC_TrappedXC.size() - 1] = XcTotTrappedBCC;
+
+    LOG_F(INFO, " Right before C diffusion step, at time %e seconds ", mvTime);
+    LOG_F(INFO, " Now for %d BCC cells I have average Hydrogen %e ", CellsBCC, XcTotBCC);
+    LOG_F(INFO, " Now for %d FCC cells I have average Hydrogen %e ", CellsFCC, XcTotFCC);
+    LOG_F(INFO, " I also have in the whole RVE average Hydrogen %e , average XC kappa factor  %e , and total Xc trapped from overall %e ", XcTot, XcKappaFactor, XcTotTrapped);
+    LOG_F(INFO, " Now for %d BCC cells I have average Hydrogen %e , average XC kappa factor %e , and total Xc trapped from overall %e ", CellsBCC, XcTotBCC, XcKappaFactorBCC, XcTotTrappedBCC);
+    LOG_F(INFO, " Now for %d FCC cells have average Hydrogen %e , average XC kappa factor %e , and total Xc trapped from overall %e ", CellsFCC, XcTotFCC, XcKappaFactorFCC, XcTotTrappedFCC);
+   if (!mvUserSettings.mvIsHydrogenSource && fabs(mvUserSettings.mvAverageHydrogen - XcTot) > mvUserSettings.mvAverageHydrogen / 50) {
+    LOG_F(ERROR, " You are not solving correctly numerical system, you are supposed to conserve hydrogen if you dont have in-flow or out-flow, BUT your initial average concentration was %g whereas now it is %g", mvUserSettings.mvAverageHydrogen,XcTot);
+  exit(-1);
+   }
+
+}
+
+std::vector<std::pair<double, double>> Microstructure::ReadTemperatureProfile(const std::string& filename) {
+    std::ifstream infile(filename);
+    std::vector<std::pair<double, double>> temperatureData;
+
+    if (!infile.is_open()) {
+        LOG_F(ERROR, "Could not open file: %s", filename.c_str());
+        return temperatureData;
+    }
+    std::string headerLine;
+    std::getline(infile, headerLine); // skip header
+    
+    double time, temp;
+    while (infile >> time >> temp) {
+        temperatureData.emplace_back(time, temp);
+    }
+
+    return temperatureData;
+}
+
+
+void Microstructure::SetTemperatureFromProfile(const std::vector<std::pair<double, double>>& temperatureData) {
+    double currentTemperature = mvUserSettings.mvStartTemperature;
+
+    for (const auto& entry : temperatureData) {
+        if (mvTime < entry.first) break;
+        currentTemperature = entry.second;
+    }
+
+    mvpTCK->SetTemperatureForThisStep(currentTemperature);
+}
+
 
 /**
  * @brief Updates temperature based on simulation time and input settings, and informs thermodynamics object about it (which should NECESSARILY ALWAYS BE UPDATED)
@@ -3672,8 +4796,13 @@ void Microstructure::SimulationStep()
 {
 
     LOG_F(INFO, "Simulation step %d temp %g nFCC %d nBCC %d nHCP %d nLiquid %d", mvSimulationStep,mvpTCK->GetTemperatureForThisStep(),NCellsFCC, NCellsBCC, NCellsHCP,NCellsLiquid);
-
-
+int carbides = 0;
+for (int i = 0; i < mvpStateVars->mvN; i++){
+    if (mvpStateVars->GetLatticeIdOfCell(i) == 5) {
+        carbides++;
+    }
+}
+ LOG_F(INFO, "Carbides %d", carbides);
 if (mvUserSettings.mvIsSolidification){
 double minXC = 10000;
 double maxXC = 0.;
@@ -3684,6 +4813,7 @@ double meanXCu = 0.;
 double minXSn = 10000;
 double maxXSn = 0.;
 double meanXSn = 0.;
+if (mvUserSettings.mvIsSolidification){
         for (int index = 0; index < mvpStateVars->mvN; ++index) {
  if ((*mvpStateVars->mvpXC)[index] > maxXC)     maxXC = (*mvpStateVars->mvpXC)[index] ;
   if ((*mvpStateVars->mvpXC)[index] < minXC)     minXC = (*mvpStateVars->mvpXC)[index] ;
@@ -3704,9 +4834,15 @@ double meanXSn = 0.;
      LOG_F(WARNING, "min XCu %g max xc  %g mean xcu %g", minXCu,maxXCu,meanXCu);
      LOG_F(WARNING, "min XSn %g max xsn  %g mean xsn %g", minXSn,maxXSn,meanXSn);
 }
+}
     ConsumedCellsInStepBySamePhase.clear();
     ConsumedCellsInStepByDifferentPhase.clear();
-    SetTemperatureAndInformInThermo();
+    if (!mvUserSettings.mvUseTemperatureDataFilename)     SetTemperatureAndInformInThermo();
+    else {
+
+        SetTemperatureFromProfile(TemperatureTimeProfile);
+         LOG_F(INFO, "Temperature set based on profile provided");
+    }
     LOG_F(INFO, "Simulation step %d time is %f temperature is %f", mvSimulationStep, mvTime, mvpTCK->GetTemperatureForThisStep());
 
 
@@ -3716,45 +4852,63 @@ double meanXSn = 0.;
     }
 
 
-    if (mvUserSettings.mvHasSoluteDiffusion && !mvUserSettings.mvIsSolidification)
+    if (mvUserSettings.mvHasSoluteDiffusion && !mvUserSettings.mvIsSolidification && !mvUserSettings.mvIsHydrogen)
     {
-        if (mvUserSettings.mvIsHydrogen && mvUserSettings.mvIsHydrogenSource){
-            ChargeTheRVE();
-        }
+
         mvTimeStep = mvUserSettings.mvTimeStep;
         mvMaxDiffusivityInTimeStep = CalculateDiffusivityMatrixAndReturnMaxDiffusivityInStep();
         // LOG_F(INFO, "mvMaxDiffusivityInTimeStep %g",mvMaxDiffusivityInTimeStep);
-        mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep, 0, 0);
+        mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep, 0, 0, false);
+    }
+
+
+   if (mvUserSettings.mvHasSoluteDiffusion && !mvUserSettings.mvIsSolidification && mvUserSettings.mvIsHydrogen)
+    {
+
+        mvTimeStep = mvUserSettings.mvTimeStep;
+                if (mvUserSettings.mvIsHydrogen && mvUserSettings.mvIsHydrogenSource){
+                    if (!mvUserSettings.mvUseHydrogenChargingDataFilename) ChargeTheRVE();
+     else ChargeTheRVEFromInflowFile(InFlowHydrogenTimeProfile);
+        }
+                mvMaxDiffusivityInTimeStep = CalculateDiffusivityMatrixForHydrogenAndReturnMaxDiffusivityInStep();
+        // LOG_F(INFO, "mvMaxDiffusivityInTimeStep %g",mvMaxDiffusivityInTimeStep);
+        mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep, 3, 0, mvUserSettings.mvIsHydrogenSource);
     }
 
     if (mvUserSettings.mvHasSoluteDiffusion)
     {
-        if ((mvSimulationStep == 0 || mvSimulationStep == 1) && mvStoreSoluteEvolutionTime < mvStoreSoluteEvolutionTimeInterval)
-            CarbonTemporalOverallQuantitiesForLaterAnalysis();
+        if ((mvSimulationStep == 0 || mvSimulationStep == 1) && mvStoreSoluteEvolutionTime < mvStoreSoluteEvolutionTimeInterval){
+
+            if (!mvUserSettings.mvIsHydrogen) CarbonTemporalOverallQuantitiesForLaterAnalysis();
+            else HydrogenTemporalOverallQuantitiesForLaterAnalysis();
+        }
         if (mvStoreSoluteEvolutionTime >= mvStoreSoluteEvolutionTimeInterval || mvStoreSoluteEvolutionTimeStep >= mvStoreSoluteEvolutionTimeStepInterval)
         {
-            CarbonTemporalOverallQuantitiesForLaterAnalysis();
+             if (!mvUserSettings.mvIsHydrogen)  CarbonTemporalOverallQuantitiesForLaterAnalysis();
+                         else HydrogenTemporalOverallQuantitiesForLaterAnalysis();
+
             mvStoreSoluteEvolutionTime = 0.;
             mvStoreSoluteEvolutionTimeStep = 0;
         }
     }
-      LOG_F(INFO, "mvUserSettings.mvIsSolidification %d and NCellsFCC %d",mvUserSettings.mvIsSolidification,NCellsFCC);
 
     if (mvUserSettings.mvIsSolidification)
     {
+              LOG_F(INFO, "mvUserSettings.mvIsSolidification %d and NCellsFCC %d",mvUserSettings.mvIsSolidification,NCellsFCC);
+
                 mvTimeStep = mvUserSettings.mvTimeStep;
         mvMaxDiffusivityInTimeStep =   1.e-10;
         CalculateDiffusivityMatrixForImpurities(mvMaxDiffusivityInTimeStep);
       LOG_F(INFO, "mvMaxDiffusivityInTimeStep %g",mvMaxDiffusivityInTimeStep);
-        mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep, 0, 3);
+        mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep, 0, 3, false);
 
 
     //    mvMaxDiffusivityInTimeStep = 3 * 1.e-9;
         // CalculateDiffusivityMatrixForImpurities(mvMaxDiffusivityInTimeStep);
         // // LOG_F(INFO, "mvMaxDiffusivityInTimeStep %g",mvMaxDiffusivityInTimeStep);
-      mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep,1, 3);
+      mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep,1, 3, false);
         // // LOG_F(INFO, "mvMaxDiffusivityInTimeStep %g",mvMaxDiffusivityInTimeStep);
-      mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep, 2, 3);
+      mvpStateVars->SoluteDiffusionStep(mvpTCK, mvTimeStep, mvUserSettings.mvSoluteSegregationDislocations, mvMaxDiffusivityInTimeStep, mvUserSettings.mvIsPartitioningHappeningInDiffusionStep, mvUserSettings.mvIsSoluteSegregationHappeningInDiffusionStep, 2, 3, false);
     }
 
     if (mvUserSettings.mvIsRexAndGG)
@@ -3770,10 +4924,13 @@ double meanXSn = 0.;
          mvMaxReRate = std::max(std::max(mvMaxReRateFCC, mvMaxReRateBCC), mvMaxReRateHCP);
 
         mvTimeStep = 1.0 / mvMaxReRate;
+        if (mvTimeStep > mvUserSettings.mvMaxAllowedTimeStep) {
+            mvTimeStep =  mvUserSettings.mvMaxAllowedTimeStep;
 
-
-
+            LOG_F(WARNING, "Take care, your calculated time step based on re-orientation rate in Rex&GG was too high, due to very low re-orientation rate. I decrease it until the re-rate becomes sufficiently high. I assume you have low temperatures somewhere in your temperature time profile. If so, it is OK!");
+        }
         LOG_F(INFO, "Rex & GG max rate is %f and time step %f", mvMaxReRate, mvTimeStep);
+
         int NReoriented = 0;
         int NReorientedSubset = 0;
         if (mvMaxReRateFCC > 0.) NReorientedSubset = ReOrientCellsForFullFieldRexOrGG(0);
@@ -3858,9 +5015,9 @@ double meanXSn = 0.;
             WriteMicrostructureRX(mvUserSettings.mvOutputFolderPath + "/MicroData_Time_" + std::to_string(int(mvTime)) + ".txt");
     if (mvUserSettings.mvHasSoluteDiffusion || mvUserSettings.mvIsSolidification)
         {
-                        WriteMicrostructureQP(mvUserSettings.mvOutputFolderPath + "/MicroData_Time_" + std::to_string(int(mvTime)) + ".txt");
-
-            MapType = 1;
+                      if (!mvUserSettings.mvIsHydrogen)  WriteMicrostructureQP(mvUserSettings.mvOutputFolderPath + "/MicroData_Time_" + std::to_string(int(mvTime)) + ".txt");
+                        else  WriteMicrostructureHydrogen(mvUserSettings.mvOutputFolderPath + "/MicroData_Time_" + std::to_string(int(mvTime)) + ".txt");
+            MapType = 1; 
                 if (mvTimePassedFromPreviousOutput >= mvUserSettings.mvTimeRangeToWriteOutput) {
             ExportColorCodedTIFF(mvUserSettings.mvOutputFolderPath + "/Carbon_Time_" + std::to_string(int(mvTime)) + "_Map.tiff", MapType);
             ExportColorbar(mvUserSettings.mvOutputFolderPath + "/Carbon_Time_" + std::to_string(int(mvTime)) + "_Colorbar.tiff");
@@ -3907,5 +5064,17 @@ double meanXSn = 0.;
 
         mvTimePassedFromPreviousOutput = 0.0;
         mvTimeStepsPassedFromPreviousOutput = 0;
+    }
+    if (mvTime > mvUserSettings.mvTimeTotal){
+    if  (mvUserSettings.mvIsHydrogen){
+        LOG_F(INFO, "Simulation finishing at time %g seconds ",mvTime);
+                    WriteHydrogenInflowOutflow(mvUserSettings.mvOutputFolderPath + "/HydrogenEvolution.txt");
+                                        WriteHydrogenStateVars(mvUserSettings.mvOutputFolderPath + "/HydrogenInSites.txt");
+    }
+    if  (mvUserSettings.mvHasSoluteDiffusion && !mvUserSettings.mvIsHydrogen){
+        LOG_F(INFO, "Simulation finishing at time %g seconds ",mvTime);
+                    WriteCarbon(mvUserSettings.mvOutputFolderPath + "/CarbonEvolution.txt");
+    }
+    mvStillSimulating = false;
     }
 }

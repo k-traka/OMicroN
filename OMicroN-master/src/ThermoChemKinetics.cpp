@@ -14,7 +14,7 @@
 
 
 
-ThermChemKin::ThermChemKin(double userStartTemperature, double userXCo,double userGB_Mo,double userGB_Qg,double userGB_E,double userPB_Mo,double userPB_Qg,double userPB_E, double user_DiffPreFactor, double user_DiffQg, double userXCu, double userXSn) {
+ThermChemKin::ThermChemKin(double userStartTemperature, double userXCo,double userGB_Mo,double userGB_Qg,double userGB_E,double userPB_Mo,double userPB_Qg,double userPB_E, double user_DiffPreFactor, double user_DiffQg, double userXCu, double userXSn, double user_k_part) {
     mvT = userStartTemperature; // only in initialization mvT is this temperature. Later it is set per simulation step here
     mvMuCEqParamA = -90885;
     mvMuCEqParamB = 61;
@@ -35,7 +35,7 @@ mvXSn = userXSn;
 
     mvSoluteDiffPreFactor = user_DiffPreFactor;
     mvSoluteDiffQg = user_DiffQg;
-    
+    mvSolutePhasePartCoeff = user_k_part;
 }
 
 ThermChemKin::~ThermChemKin() {
@@ -136,9 +136,31 @@ void ThermChemKin::CalculateXcEqNextToInterphase(const double T, double InitialX
     *XcAlphaEq = XcAlphaTrial;
 }
 
+       /** @brief Gets hydrogen diffusivity in iron FCC (annealed austenite) at 25 Celcius from https://doi.org/10.1016/0001-6160(86)90123-9
+     * @return Diffusivity in \f$m^2 s^{-1}\f$
+     */
+    double ThermChemKin::GetHydrogenDiffusivityInFCC() const 
+    { 
+        double SoluteDiffPreFactor = 1.3 * 1.e-3; //in cm2/s
+        SoluteDiffPreFactor *= 1.e-4 ; //convert to m2/s
+        double SoluteDiffQg = 49200;
+        return (SoluteDiffPreFactor * exp(-SoluteDiffQg / (R_GAS * mvT)));
+
+         }
 
 
-       /** @brief Gets solute diffusivity using Arrhenius type equation at
+       /** @brief Gets hydrogen diffusivity in iron BCC (annealed ferrite) at 25 Celcius from https://doi.org/10.1016/0001-6160(86)90123-9
+     * @return Diffusivity in \f$m^2 s^{-1}\f$
+     */
+    double ThermChemKin::GetHydrogenDiffusivityInBCC() const 
+    { 
+        double SoluteDiffPreFactor = 8.45 * 1.e-2; //in cm2/s
+        SoluteDiffPreFactor *= 1.e-4 ; //convert to m2/s
+        double SoluteDiffQg = 33700;
+        return (SoluteDiffPreFactor * exp(-SoluteDiffQg / (R_GAS * mvT)));
+
+         }
+                /** @brief Gets solute diffusivity using Arrhenius type equation at
      * temperature #mT given user defined input values 
      *
      * @return Diffusivity in \f$m^2 s^{-1}\f$
@@ -147,6 +169,8 @@ void ThermChemKin::CalculateXcEqNextToInterphase(const double T, double InitialX
     { 
         return (mvSoluteDiffPreFactor * exp(-mvSoluteDiffQg / (R_GAS * mvT)));
          }
+
+
 
 
 /** @brief Gets Ågren's composition dependent austenite carbon diffusivity at
@@ -340,22 +364,30 @@ double ThermChemKin::GetMuSubstitutionalInFCC(const double xC) const {
 }
 
 
-
-
 /** @brief Returns the linearly interpolated value equilibrium (local partitioning) carbon concentration in FCC given the total interphase carbon concentration
      *  @param xCBCCNow the current (before further partitioning) carbon concentration in adjacent BCC
      *  @param xCFCCNow the current (before further partitioning) carbon concentration in adjacent FCC
      *  @return xCFCC linearly interpolated value equilibrium (local partitioning) carbon concentration in FCC
  */
-double ThermChemKin::GetEqXcFCCAtThisInterface(const double xCBCCNow, const double xCFCCNow) const {
+double ThermChemKin::GetEqXcFCCAtThisInterface(const double xCBCCNow, const double xCFCCNow, const bool UseChemPot) const {
     double xCFCC;
+
+    double xC = 0.5 * (xCBCCNow + xCFCCNow);
+
+
+        if (!UseChemPot) {
+            double kPart = mvSolutePhasePartCoeff / (mvSolutePhasePartCoeff + 1);
+                xCFCC = 2.0 * xC * kPart;
+                    return xCFCC;
+
+        }    
+
     // CHECK_F(mvXCLocalEqFCC_TableXC != nullptr, "XC Eq. Local in FCC interpolator has not been initialized, check if files are loaded first of all");
     if (mvpXCLocalEqFCC_TableXC == nullptr) {
-        std::cerr << "XC Eq. Local in FCC interpolator has not been initialized, check if files are loaded first of all" << std::endl;
+        if (UseChemPot) std::cerr<<"In thermoKinetics : you chose to use chemical potentials for solute phase partitioning but XC Eq. Local in FCC interpolator has not been initialized, check if files are loaded first of all. If not you may just choose a partitioning coefficient in your settings file"<<std::endl;
         return 0.0; // or some appropriate error value
     }
 
-    double xC = 0.5 * (xCBCCNow + xCFCCNow);
 
     xCFCC = GetValueLocalEqXC_Clamped(xC, mvpXCLocalEqFCC_TableXC);
     if (xC > mvXCmaxInLocalEqRelationship) {

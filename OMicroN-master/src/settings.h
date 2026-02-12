@@ -87,6 +87,26 @@ public:
     double mvEndTemperature;
 
     /**
+     * @brief Flag for setting Temperature based on file table and ignoring the above values.
+     */
+    int mvUseTemperatureDataFilename;
+
+
+        /**
+     * @brief Value for a maximum allowed time step - in a simulation, if time step is determined based on interface motion (i.e. rex, gg) it can happen at low temperatures that time step is too big due to very small max rate.
+     */
+    int mvMaxAllowedTimeStep;
+
+
+
+    /**
+     * @brief String for filename to read Temperature based on  table.
+     */
+    std::string mvTemperatureDataFilename;
+
+
+
+    /**
      * @brief Total simulation time (s).
      */
     double mvTimeTotal;
@@ -151,6 +171,19 @@ int mvIsHydrogen;
      *      */
 
 int mvIsHydrogenSource;
+    /**
+     * @brief Flag indicating whether the charging is constant flux or constant concentration
+     *      */
+
+int mvIsHydrogenConstantFlux;
+
+    /**
+     * @brief Ratio  of equilibrium solute concentration between adjacent phases, e.g. equilibrium hydrogen concentration in FCC divided by equilibrium hydrogen concentration in BCC. Ratio is always high solubility phase to low solubility phase. It is useful for solute redistribution when chemical potentials are not provided by user.
+     *      */
+
+double mvSolutePhasePartitioningCoefficient;
+
+
     /**
      * @brief Flag indicating whether solidification considers Solute Drag
      *      */
@@ -229,6 +262,10 @@ int mvIsHydrogenSource;
     int mvReadDislocationDensity;
 
     /**
+     * @brief Flag indicating whether the dislocation density provided by the input file should be used AS STATISTICALLY STORED DISLOCATIONS in the simulation. Turn off means calculating the local dislocation density ONLY based on orientation gradients, turn on means the free dislocation density is assigned and then local orientation gradients are calculated and summed in each cell's total disl. density. 
+     */
+    int mvReadOnlyFreeDislocationDensity;
+    /**
      * @brief Flag indicating whether CSL19 boundaries (Ibe and Lucke) grow faster.
      */
     int mvIncludeCSL19FastGrowth;
@@ -294,16 +331,38 @@ int mvIsHydrogenSource;
     double mvXcToUseConstantDiffusivityAgrenInAustenite;
 
     /**
-     * @brief Concentration of solute (carbon or other) that redistributes through the simulation (atomic fraction).
+     * @brief Flag on whether the solute concentration (either carbon or hydrogen) per cell should be read from microstructure file
      */
-    double mvAverageCarbon;
+    int mvReadSoluteConcentration;
 
     /**
-     * @brief Concentration of solute (carbon or other) that redistributes through the simulation (atomic fraction).
+     * @brief Concentration of carbon IN ATOMIC FRACTION that redistributes through the simulation.
+     */
+    double mvAverageCarbon;
+    /**
+     * @brief Concentration of hydrogen IN AT PERCENT that redistributes through the simulation.
+     */
+    double mvAverageHydrogen;
+
+    /**
+     * @brief Flag on whether hydrogen charging concentration rate should be read by file.
+     */
+    int mvUseHydrogenChargingDataFilename;
+    /**
+     * @brief Filename that contains the time-charging hydrogen data to read.
+     */
+    std::string mvHydrogenChargingDataFilename;
+
+    /**
+     * @brief Concentration of hydrogen IN PPB that charges the middle of the RVE (middle ecause we want to preserve periodic boundary conditions).
+     */
+    double mvHydrogenSourceConcentration;
+    /**
+     * @brief Concentration of Copper that redistributes through the simulation (atomic fraction).
      */
     double mvAverageCopper;
         /**
-     * @brief Concentration of solute (carbon or other) that redistributes through the simulation (atomic fraction).
+     * @brief Concentration of Tin that redistributes through the simulation (atomic fraction).
      */
     double mvAverageTin;
 

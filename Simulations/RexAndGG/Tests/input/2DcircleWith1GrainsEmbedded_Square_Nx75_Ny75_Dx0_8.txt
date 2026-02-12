@@ -1,4 +1,5 @@
-5625	0	0	0	0	0	0	0	0	0	0	0	0	0	0
+5625	
+x [um]    y [um]    z [um]   phase disl.density[1/um2] euler_phi1[degrees] euler_Phi[degrees] euler_phi2[degrees] confidenceIndex RecrystallisedState
 0.0	0.0	0	1	1	54.74	45	45	1	1
 0.8	0.0	0	1	1	54.74	45	45	1	1
 1.6	0.0	0	1	1	54.74	45	45	1	1

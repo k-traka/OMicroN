@@ -47,7 +47,7 @@ public:
      * @param user_DiffPreFactor Pre-exponential factor for solute diffusion.
      * @param user_DiffQg Activation energy for solute diffusion (J/mol).
      */
-    ThermChemKin(double userXCo, double userStartTemperature, double userGB_Mo, double userGB_Qg, double userGB_E, double userPB_Mo, double userPB_Qg, double userPB_E, double user_DiffPreFactor, double user_DiffQg, double userXCu, double userXSn);
+    ThermChemKin(double userXCo, double userStartTemperature, double userGB_Mo, double userGB_Qg, double userGB_E, double userPB_Mo, double userPB_Qg, double userPB_E, double user_DiffPreFactor, double user_DiffQg, double userXCu, double userXSn, double user_k_part);
 
     /// Destructor
     ~ThermChemKin();
@@ -147,12 +147,27 @@ public:
      * @return Carbon diffusivity.
      */
     double GetCDiffusivityAgrenWithRestrictionForXC(const double xC, const double MaxAllowedXcToAffectDiffusivity) const;
-
     /**
      * @brief Gets the solute diffusivity from user-defined parameters.
      *
      * @return Solute diffusivity.
      */
+
+
+        double GetHydrogenDiffusivityInFCC() const;
+  /**
+     * @brief Gets the hydrogen diffusivity in FCC room temperature from https://doi.org/10.1007/s11661-018-4815-9.
+     *
+     * @return Hydrogen diffusivity.
+     */
+
+        double GetHydrogenDiffusivityInBCC() const;
+  /**
+     * @brief Gets the hydrogen diffusivity in BCC room temperature from https://doi.org/10.1007/s11661-018-4815-9.
+     *
+     * @return Hydrogen diffusivity.
+     */
+
     double GetSoluteDiffusivityFromUser() const;
 
     /// @name Chemical Potentials and Thermodynamic Equilibrium
@@ -217,7 +232,7 @@ public:
      * @param xCFCCNow Carbon concentration in FCC (atomic fraction).
      * @return Equilibrium carbon concentration in FCC (atomic fraction).
      */
-    double GetEqXcFCCAtThisInterface(const double xCBCCNow, const double xCFCCNow) const;
+    double GetEqXcFCCAtThisInterface(const double xCBCCNow, const double xCFCCNow, const bool UseChemPot) const;
 
     /**
      * @brief Gets the local equilibrium carbon concentration, clamped to table limits.
@@ -368,6 +383,11 @@ private:
      * square meter. It quantifies the energy associated with phase boundaries.
      */
     double mvPhaseBoundaryEnergy;
+
+    /**
+     * @brief Phase partitioning coefficient for solute (i.e. ratio of equilibrium solute concentrations in high solubility phase to the one of low)
+     */
+    double mvSolutePhasePartCoeff;
 
     /**
      * @brief Pointer to table containing Gibbs energy (J/mol) in FCC vs. carbon concentration (atomic fraction).

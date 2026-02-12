@@ -15,9 +15,11 @@ UserSettings::UserSettings(const std::string& inputFile) {
 
 void UserSettings::setDefaultValues() {
     mvTimeStep = 0.1;
+    mvMaxAllowedTimeStep = 2;
     mvStartTemperature = 300.0;
     mvEndTemperature = 300.0;
     mvTimeTotal = 1000.0;
+    mvUseTemperatureDataFilename = 0;
     mvNx = 10;
     mvNy = 10;
     mvNz = 10;
@@ -40,6 +42,7 @@ void UserSettings::setDefaultValues() {
     mvRexGGParameterC = 0.7;
     mvFasterRexAndGG = 0;
     mvReadDislocationDensity = 0;
+    mvReadOnlyFreeDislocationDensity = 0;
     mvIncludeCSL19FastGrowth = 0;
     mvIsOnlyAnOrientationSubsetConsidered = 0;
     mvConsiderConstantIronAtomsPerCell = 0;
@@ -56,7 +59,13 @@ void UserSettings::setDefaultValues() {
     mvReadOriId = 0;
     mvIsHydrogen = 0;
     mvIsHydrogenSource = 0;
+    mvIsHydrogenConstantFlux = 1;
+    mvUseHydrogenChargingDataFilename = 0;
+    mvSolutePhasePartitioningCoefficient = 0;
+    mvReadSoluteConcentration = 0;
     mvAverageCarbon = 0.0;
+    mvAverageHydrogen = 0.0;
+    mvHydrogenSourceConcentration = 0.0;
     mvAverageCopper = 0.0;
     mvAverageTin = 0.0;
     mvGrainBoundaryEnergy = 0.0;
@@ -82,8 +91,11 @@ void UserSettings::writeToFile(const std::string& outputFileName) {
     }
 
     out << "TimeStep=" << mvTimeStep << std::endl;
+    out << "MaxAllowedTimeStep=" << mvMaxAllowedTimeStep << std::endl;
     out << "StartTemperature=" << mvStartTemperature << std::endl;
     out << "EndTemperature=" << mvEndTemperature << std::endl;
+    out << "UseTemperatureDataFilename=" << mvUseTemperatureDataFilename << std::endl;
+    out << "TemperatureDataFilename=" << mvTemperatureDataFilename << std::endl;
     out << "TimeTotal=" << mvTimeTotal << std::endl;
     out << "Nx=" << mvNx << std::endl;
     out << "Ny=" << mvNy << std::endl;
@@ -111,6 +123,7 @@ void UserSettings::writeToFile(const std::string& outputFileName) {
     out << "RexGGParameterC=" << mvRexGGParameterC << std::endl;
     out << "FasterRexAndGG=" << mvFasterRexAndGG << std::endl;
     out << "ReadDislocationDensity=" << mvReadDislocationDensity << std::endl;
+    out << "ReadOnlyFreeDislocationDensity=" << mvReadOnlyFreeDislocationDensity << std::endl;
     out << "IncludeCSL19FastGrowth=" << mvIncludeCSL19FastGrowth << std::endl;
     out << "IsOnlyAnOrientationSubsetConsidered=" << mvIsOnlyAnOrientationSubsetConsidered << std::endl;
     out << "ConsiderConstantIronAtomsPerCell=" << mvConsiderConstantIronAtomsPerCell << std::endl;
@@ -126,7 +139,14 @@ void UserSettings::writeToFile(const std::string& outputFileName) {
     out << "XcToUseConstantDiffusivityAgrenInAustenite=" << mvXcToUseConstantDiffusivityAgrenInAustenite << std::endl;
     out << "IsHydrogen=" << mvIsHydrogen << std::endl;
     out << "IsHydrogenSource=" << mvIsHydrogenSource << std::endl;
+    out << "IsHydrogenConstantFlux=" << mvIsHydrogenConstantFlux << std::endl;
+    out << "SolutePhasePartitioningCoefficient=" << mvSolutePhasePartitioningCoefficient << std::endl;
+    out << "ReadSoluteConcentration=" << mvReadSoluteConcentration << std::endl;
     out << "AverageCarbon=" << mvAverageCarbon << std::endl;
+    out << "AverageHydrogen=" << mvAverageHydrogen << std::endl;
+    out << "HydrogenSourceConcentration=" << mvHydrogenSourceConcentration << std::endl;
+    out << "UseHydrogenChargingDataFilename=" << mvUseHydrogenChargingDataFilename << std::endl;
+    out << "HydrogenChargingDataFilename=" << mvHydrogenChargingDataFilename << std::endl;
     out << "AverageCopper=" << mvAverageCopper << std::endl;
     out << "AverageTin=" << mvAverageTin << std::endl;
     out << "GrainBoundaryEnergy=" << mvGrainBoundaryEnergy << std::endl;
@@ -146,8 +166,12 @@ void UserSettings::writeToFile(const std::string& outputFileName) {
 
 void UserSettings::printParameters() {
     std::cout << "TimeStep=" << mvTimeStep << std::endl;
+    std::cout << "MaxAllowedTimeStep=" << mvMaxAllowedTimeStep << std::endl;
     std::cout << "StartTemperature=" << mvStartTemperature << std::endl;
-    std::cout << "EndTemperature=" << mvEndTemperature << std::endl;    std::cout << "TimeTotal=" << mvTimeTotal << std::endl;
+    std::cout << "EndTemperature=" << mvEndTemperature << std::endl;  
+    std::cout << "TimeTotal=" << mvTimeTotal << std::endl;
+    std::cout << "UseTemperatureDataFilename=" << mvUseTemperatureDataFilename << std::endl;
+    std::cout << "TemperatureDataFilename=" << mvTemperatureDataFilename << std::endl;
     std::cout << "Nx=" << mvNx << std::endl;
     std::cout << "Ny=" << mvNy << std::endl;
     std::cout << "Nz=" << mvNz << std::endl;
@@ -174,6 +198,7 @@ void UserSettings::printParameters() {
     std::cout << "RexGGParameterC=" << mvRexGGParameterC << std::endl;
     std::cout << "FasterRexAndGG=" << mvFasterRexAndGG << std::endl;
     std::cout << "ReadDislocationDensity=" << mvReadDislocationDensity << std::endl;
+    std::cout << "ReadOnlyFreeDislocationDensity=" << mvReadOnlyFreeDislocationDensity << std::endl;
     std::cout << "IncludeCSL19FastGrowth=" << mvIncludeCSL19FastGrowth << std::endl;
     std::cout << "IsOnlyAnOrientationSubsetConsidered=" << mvIsOnlyAnOrientationSubsetConsidered << std::endl;
     std::cout << "ConsiderConstantIronAtomsPerCell=" << mvConsiderConstantIronAtomsPerCell << std::endl;
@@ -188,8 +213,15 @@ void UserSettings::printParameters() {
     std::cout << "ConcentrationDependentDiffusivityInAustenite=" << mvConcentrationDependentDiffusivityInAustenite << std::endl;
     std::cout << "XcToUseConstantDiffusivityAgrenInAustenite=" << mvXcToUseConstantDiffusivityAgrenInAustenite << std::endl;
     std::cout << "IsHydrogen=" << mvIsHydrogen << std::endl;
-    std::cout << "mvIsHydrogenSource=" << mvIsHydrogenSource << std::endl;
+    std::cout << "IsHydrogenSource=" << mvIsHydrogenSource << std::endl;
+    std::cout << "IsHydrogenConstantFlux=" << mvIsHydrogenConstantFlux << std::endl;
+    std::cout << "SolutePhasePartitioningCoefficient=" << mvSolutePhasePartitioningCoefficient << std::endl;
+    std::cout << "ReadSoluteConcentration=" << mvReadSoluteConcentration << std::endl;
     std::cout << "AverageCarbon=" << mvAverageCarbon << std::endl;
+    std::cout << "AverageHydrogen=" << mvAverageHydrogen << std::endl;
+    std::cout << "HydrogenSourceConcentration=" << mvHydrogenSourceConcentration << std::endl;
+    std::cout << "UseHydrogenChargingDataFilename=" << mvUseHydrogenChargingDataFilename << std::endl;
+    std::cout << "HydrogenChargingDataFilename=" << mvHydrogenChargingDataFilename << std::endl;
     std::cout << "AverageCopper=" << mvAverageCopper << std::endl;
     std::cout << "AverageTin=" << mvAverageTin << std::endl;
     std::cout << "GrainBoundaryEnergy=" << mvGrainBoundaryEnergy << std::endl;
@@ -223,10 +255,16 @@ void UserSettings::readFromFile(const std::string& inputFile) {
             std::cout << "Key: " << key << ", Value: " << value << std::endl; // Debug print
             if (key == "TimeStep") {
                 mvTimeStep = std::stod(value);
+            } else if (key == "MaxAllowedTimeStep") {
+                mvMaxAllowedTimeStep = std::stod(value);               
             } else if (key == "StartTemperature") {
                 mvStartTemperature = std::stod(value);
             } else if (key == "EndTemperature") {
                 mvEndTemperature = std::stod(value);
+            } else if (key == "UseTemperatureDataFilename") {
+                mvUseTemperatureDataFilename =  std::stoi(value);
+            } else if (key == "TemperatureDataFilename") {
+                mvTemperatureDataFilename = value;
             } else if (key == "TimeTotal") {
                 mvTimeTotal = std::stod(value);
             } else if (key == "Nx") {
@@ -281,6 +319,8 @@ void UserSettings::readFromFile(const std::string& inputFile) {
                 mvFasterRexAndGG = std::stoi(value);
             } else if (key == "ReadDislocationDensity") {
                 mvReadDislocationDensity = std::stoi(value);
+            } else if (key == "ReadOnlyFreeDislocationDensity") {
+                mvReadOnlyFreeDislocationDensity = std::stoi(value);
             } else if (key == "IncludeCSL19FastGrowth") {
                 mvIncludeCSL19FastGrowth = std::stoi(value);
             } else if (key == "IsOnlyAnOrientationSubsetConsidered") {
@@ -311,8 +351,22 @@ void UserSettings::readFromFile(const std::string& inputFile) {
                 mvIsHydrogen = std::stoi(value);
             } else if (key == "IsHydrogenSource") {
                 mvIsHydrogenSource = std::stoi(value);
+            } else if (key == "IsHydrogenConstantFlux") {
+                mvIsHydrogenConstantFlux = std::stoi(value); 
+            } else if (key == "SolutePhasePartitioningCoefficient") {
+                mvSolutePhasePartitioningCoefficient = std::stod(value);  
+            } else if (key == "ReadSoluteConcentration") {
+                mvReadSoluteConcentration = std::stoi(value);
             } else if (key == "AverageCarbon") {
                 mvAverageCarbon = std::stod(value);
+            } else if (key == "AverageHydrogen") {
+                mvAverageHydrogen = std::stod(value);
+            } else if (key == "HydrogenSourceConcentration") {
+                mvHydrogenSourceConcentration = std::stod(value);
+            } else if (key == "UseHydrogenChargingDataFilename") {
+                mvUseHydrogenChargingDataFilename = std::stoi(value);
+            } else if (key == "HydrogenChargingDataFilename") {
+                mvHydrogenChargingDataFilename = value;
             } else if (key == "AverageCopper") {
                 mvAverageCopper = std::stod(value);
             } else if (key == "AverageTin") {

@@ -125,19 +125,24 @@ private:
     std::vector<int> ConsumedCellsInStepBySamePhase;
     std::vector<int> ConsumedCellsInStepByDifferentPhase;
 
+
+    std::vector<std::pair<double, double>> InFlowHydrogenTimeProfile;
+    std::vector<std::pair<double, double>> TemperatureTimeProfile;
+
+
     // Internal parameters
     float mvStoreSoluteEvolutionTimeInterval = 0.5;
         float mvStoreSoluteEvolutionTimeStepInterval = 10;
 
-    int mvEveryThatManySimStepsToCheckICells = 100; ///< Frequency of checking interface cells.
-    int mvEveryThatManySimStepsExport = 1000; ///
+    int mvEveryThatManySimStepsToCheckICells = 10; ///< Frequency of checking interface cells.
+    int mvEveryThatManySimStepsExport = 1000000; ///
     float mvStoreSoluteEvolutionTime;
     int mvStoreSoluteEvolutionTimeStep;
     int mvCheckICellsTime;                ///< Time to check interface cells.
     float mvTimePassedFromPreviousOutput; ///< Time that has passed from previous output time.
     int mvTimeStepsPassedFromPreviousOutput; ///< Time steps that have passed from previous output time.
     double mvMaxDiffusivityInTimeStep;
-    bool mvStillSimulating = true;              ///< Flag to indicate if the simulation is still running.
+    bool mvStillSimulating;              ///< Flag to indicate if the simulation is still running.
     float mvTime;                               ///< Current simulation time.
     int mvSimulationStep;                       ///< Current simulation step.
     int NcellsForCarbonPart;                    ///< Number of neighbour cells for carbon partitioning.
@@ -154,8 +159,17 @@ private:
     int NCellsBCC;                              ///< Number of BCC cells in RVE.
     int NCellsHCP;                              ///< Number of HCP cells in RVE.
     int NCellsLiquid;                           ///< Number of liquid cells in RVE.
+double SoluteLeavingLeftInStep;
+double SoluteLeavingRightInStep;
 
+double SoluteEnteringInStep;
     // Data members for internally storing evolution data
+    std::vector<double> OutFlowLeft;
+        std::vector<double> OutFlowRight;
+
+    std::vector<float> TimeEvolForUncharging;
+    std::vector<double> InFlow;
+
     std::vector<float> TimeEvol;
     std::vector<float> Mean_DG_Chem_InFCC_Cells;
     std::vector<float> Mean_DG_Chem_InBCC_Cells;
@@ -171,7 +185,6 @@ private:
     std::vector<float> BCC_XCTrappedKappaFactor;
     std::vector<float> FCC_TrappedXC;
     std::vector<float> BCC_TrappedXC;
-
     const UserSettings &mvUserSettings; ///< Reference to user settings.
     StateVars *mvpStateVars;            ///< Pointer to state variables.
     ThermChemKin *mvpTCK;               ///< Pointer to thermodynamic / chemical / kinetic data.
@@ -187,14 +200,17 @@ private:
     void ValidateOrientationSettingsAndCheckNonIndexedPixels(); ///< Checkes the state of the initial microstructure that is read (e.g. the orientations are valid, how many cells are non indexed etc.)
     float SetStateVariablesBasedOnSimAndGiveInfoForMicrostructuralState(); ///< Sets values on the state variables of each cell depending on the desired simulation and application.
     void SetStateVariablesForSolidification();
+    void SetStateVariablesForHydrogen(); ///<Sets values on the state variables of each cell for hydrogen redistribution simulations
+
     /// @}
 
     /// @name Functions for analyzing and saving in log file the solute redistribution average behavior
     /// @{
     void CarbonTemporalOverallQuantitiesForLaterAnalysis();
-    /// @}
 
-    
+    void HydrogenTemporalOverallQuantitiesForLaterAnalysis();
+        /// @}
+
     /// @name Functions for analyzing phase fractions
     /// @{
     void CalculateNumbersOfCells();
@@ -204,13 +220,20 @@ private:
     /// @{
     void ReadMicrostructureFile(const std::string &startFileName); ///< Determines the format of microstructure file 
     void ReadMicrostructureTextFile(const std::string &startFileName); ///< Reads microstructure file. The file should contain one header line with the number of pixels/voxels. After this the columns are:  x (um), y (um),  z (um), latticeId (0 for FCC, 1 for BCC, 2 for HCP), disl.density (1/um2),  euler phi1 (degrees), euler Phi (degrees), euler phi2 (degrees), confidence index,  rex or not (0 or 1)
+    void ReadMicrostructureAngFile(const std::string &startFileName); ///< Reads microstructure file. The file should contain one header line with the number of pixels/voxels. After this the columns are:  x (um), y (um),  z (um), latticeId (0 for FCC, 1 for BCC, 2 for HCP), disl.density (1/um2),  euler phi1 (degrees), euler Phi (degrees), euler phi2 (degrees), confidence index,  rex or not (0 or 1)
+
     void ReadMicrostructureHDF5File(const std::string &startFileName); ///< Reads microstructure file. The file should contain one header line with the number of pixels/voxels. After this the columns are:  x (um), y (um),  z (um), latticeId (0 for FCC, 1 for BCC, 2 for HCP), disl.density (1/um2),  euler phi1 (degrees), euler Phi (degrees), euler phi2 (degrees), confidence index,  rex or not (0 or 1)
     void MakeMicrostructure();
     void MakeMicrostructureTestDeformation();
     void MakeMicrostructureRolled();
    void WriteNodesPositions(const std::string &fullPath);
 void WriteMicrostructureQP(const std::string &fullPath);
+void WriteMicrostructureHydrogen(const std::string &fullPath);
     void WriteMicrostructureRX(const std::string &writeFileName);
+    void WriteHydrogenInflowOutflow(const std::string &fullPath);
+    void WriteHydrogenStateVars(const std::string &fullPath);
+    void WriteCarbon(const std::string &fullPath);
+
 void ExportColorCodedTIFF(const std::string &fullPath, int MapType);
 void exportNodePositionsAsTiff(const std::string& filename);
 void exportDeformedTiff(const std::string& filename, const std::vector<float>& data, int nx, int ny, int nz);
@@ -235,6 +258,10 @@ std::vector<float> Normalize(const std::vector<float>& vec);
     void SetTemperatureAndInformInThermo();
     /// @}
 
+    std::vector<std::pair<double, double>> ReadTemperatureProfile(const std::string& filename);
+
+    void SetTemperatureFromProfile(const std::vector<std::pair<double, double>>& temperatureData);
+        /// @}
     /**
      * @name Functions used for interface motion (e.g., Recrystallization, grain growth, phase transformations)
      * @{
@@ -297,7 +324,8 @@ Eigen::Vector3d CalculatePlaneNormal(const Eigen::Vector3d& dirCartesian, const 
      */
     double CalculateDiffusivityMatrixAndReturnMaxDiffusivityInStep(); /**< Calculate diffusivity matrix and return the maximum diffusivity in the current step. */
         void ChargeTheRVE();
-
+        void ChargeTheRVEFromInflowFile(const std::vector<std::pair<double, double>>& inflowData);
+        std::vector<std::pair<double, double>> ReadInflowRateProfile(const std::string& filename);
     /** @} */
  /**
      * @name Functions used for solute redistribution during solidification (e.g., liquid partitioning / trapping to defects)
@@ -305,6 +333,11 @@ Eigen::Vector3d CalculatePlaneNormal(const Eigen::Vector3d& dirCartesian, const 
      */
 void CalculateDiffusivityMatrixForImpurities(double maxDiffusivityOfElement);
 
+    /**
+     * @name Functions used for hydrogen redistribution (e.g., hydrogen partitioning / trapping to defects)
+     * @{
+     */
+ double CalculateDiffusivityMatrixForHydrogenAndReturnMaxDiffusivityInStep(); 
 
     /**
      * @name Auxiliary functions for repetitive transitions within CA state variables

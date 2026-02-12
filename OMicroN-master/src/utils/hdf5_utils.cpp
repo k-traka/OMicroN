@@ -38,8 +38,9 @@ std::vector<T> H5_IO::ReadDataset(const std::string& datasetName) {
 
     return data;
 }
-
 // Explicit instantiation of the template
 template std::vector<double> H5_IO::ReadDataset<double>(const std::string& datasetName);
 template std::vector<float> H5_IO::ReadDataset<float>(const std::string& datasetName);
 template std::vector<int> H5_IO::ReadDataset<int>(const std::string& datasetName);
+template std::vector<int64_t> H5_IO::ReadDataset<int64_t>(const std::string& datasetName);
+template std::vector<uint32_t> H5_IO::ReadDataset<uint32_t>(const std::string& datasetName);  // 🔹 Missing Instantiation

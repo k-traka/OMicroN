@@ -1,14 +1,28 @@
 appname := OMicroN
+
 # choose compiler
 CXX := g++
-# compiler flags
-CXXFLAGS := -std=c++17 -mno-avx -ffast-math -Wno-unknown-pragmas -march=native -fopenmp -fPIC -fmax-include-depth=300
-BUILD_DIR := build
+
+# Default mode is Release unless specified otherwise (use: `make MODE=debug`)
+MODE ?= release
+
+# Compiler flags for different modes
+DEBUG_FLAGS := -g -O0 -DDEBUG
+RELEASE_FLAGS := -O3 -DNDEBUG
+
+# Set compilation flags based on the mode
+ifeq ($(MODE),debug)
+    CXXFLAGS := -std=c++17 -mno-avx -ffast-math -Wno-unknown-pragmas -march=native -fopenmp -fPIC -fmax-include-depth=300 $(DEBUG_FLAGS)
+else
+    CXXFLAGS := -std=c++17 -mno-avx -ffast-math -Wno-unknown-pragmas -march=native -fopenmp -fPIC -fmax-include-depth=300 $(RELEASE_FLAGS)
+endif
+
+# Build directories
+BUILD_DIR := build/$(MODE)
 BIN_DIR := bin
 SRC_DIR := src
 UTILS_DIR := $(SRC_DIR)/utils
 LIBS := -lm -ltiff -lpthread -fopenmp
-
 
 # Includes source directories
 INCLUDE := -I$(SRC_DIR) -I$(UTILS_DIR)
@@ -30,13 +44,9 @@ SOURCES_TMP := $(patsubst $(UTILS_DIR)/%,%,$(SOURCES_TMP))
 # Object files
 OBJECTS := $(patsubst %.cpp,$(BUILD_DIR)/%.o,$(SOURCES_TMP))
 
-OMicroN: $(BIN_DIR)/OMicroN
-
-# Main executable
+# Main executable target
 $(BIN_DIR)/OMicroN: $(OBJECTS) $(BUILD_DIR)/main.o | $(BIN_DIR)
 	$(CXX) -o $@ $^ $(LIBS)
-
-## Targets for the object files
 
 # .cpp files in the source directory
 $(BUILD_DIR)/%.o: $(SRC_DIR)/%.cpp | $(BUILD_DIR)
@@ -48,7 +58,7 @@ $(BUILD_DIR)/%.o: $(UTILS_DIR)/%.cpp | $(BUILD_DIR)
 	@mkdir -p $(dir $@)
 	$(CXX) -c $(CXXFLAGS) $(DEFINES) $(INCLUDE) $(INCLUDES) -o $@ $<
 
-## Target for making directories
+# Ensure build directories exist
 $(BIN_DIR) $(BUILD_DIR):
 	mkdir -p $@
 
@@ -59,7 +69,7 @@ depend: .depend
 	$(CXX) $(CXXFLAGS) $(DEFINES) $(INCLUDE) $(INCLUDES) -MM $^ >>./.depend;
 
 clean:
-	rm -rf $(BUILD_DIR) $(BIN_DIR)
+	rm -rf build/debug build/release $(BIN_DIR)
 
 dist-clean: clean
 	rm -f *~ .depend

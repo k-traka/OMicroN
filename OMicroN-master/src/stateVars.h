@@ -69,6 +69,7 @@ float *mvpVonMisesStress = nullptr;
     std::vector<int> mvpOriId;  ///< Orientation ID of the cell
     int *mvpIsInterface = nullptr;           ///< Flag that determines if a cell is a (sub)grain boundary cell
     int *mvpIsInterphase = nullptr;        ///< Flag that determines if a cell is a phase boundary cell
+    int *mvpIsMartensite = nullptr;
     /// @}
 
     /// @name Local composition data
@@ -146,7 +147,7 @@ float *mvpVonMisesStress = nullptr;
  * @param IsPartitioningHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
-Eigen::VectorXd NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *TCK_p, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere,bool UseChemPot, int highSolPhase);
+Eigen::VectorXd NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *TCK_p, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere,bool UseChemPot, int highSolPhase, bool IsChargingOneSide);
   
   /** @brief Performs one computation of the system Ax=b for Traka's diffusion / partitioning / trapping to defects
  * Traka, 2024, Acta Materialia.
@@ -159,7 +160,7 @@ Eigen::VectorXd NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *TCK_p,
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-    void SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *th_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int HighSolPhase);
+    void SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *th_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int HighSolPhase, bool UseChemPot, bool IsChargingOneSide);
 
     ThermChemKin* mvpTCK; ///< Pointer to thermodynamic data.
 
@@ -201,13 +202,15 @@ float GetVonMisesStress(int index){return mvpVonMisesStress[index];};
      /// @name Functions for setting state variables of cells
     /// @{
 
-    void SetEBSDRelatedStuffForRexAndGG(int index,float CI, int RX, float rho);
+    void SetMicrostructureRelatedStateVars(int index,float CI, int RX, float rho, int IncludeSoluteDiffusion, float Xsolute);
     void SetStateVariablesRelatedToRexAndGG(int index,float ReRate, int ReFraction, float MaxAnglePassed);
   
     void SetCellAsInterface(int index){ mvpIsInterface[index] = 1;}
     void SetCellAsInterphase(int index){ mvpIsInterphase[index] = 1;}
     void SetCellAsNonInterface(int index){ mvpIsInterface[index] = 0;}
     void SetCellAsNonInterphase(int index){ mvpIsInterphase[index] = 0;}
+    void SetCellAsMartensite(int index){ mvpIsMartensite[index] = 1;}
+    void SetCellAsNonMartensite(int index){ mvpIsMartensite[index] = 0;}
 
     int IsCellInterface(int index){return mvpIsInterface[index];}
     int IsCellInterphase(int index){return mvpIsInterphase[index];}
@@ -215,6 +218,8 @@ float GetVonMisesStress(int index){return mvpVonMisesStress[index];};
     void SetOriIdOfCell(int index, int OriId) { mvpOriId[index] = OriId; }
     void SetIfCellHasNonIndNeighbours(int index, int HasNeighNonInd) { mvpHasNeighNonInd[index] = HasNeighNonInd; }
     void SetLatticeIdOfCell(int index, int latticeValue){mvpLatticeId[index]=latticeValue;}
+    void SetIfSoluteDiffusionKeepsConstantParentAtoms(bool keepParent){mvKeepConstantIronAtomsPerCell=keepParent;}
+
 ///@}
     /// @name Function for deleting KAM - it is called after initialing all pointers with simulation-necessary state variables (KAM is not useful after setting dislocation density (if not read)).
     /// @{
@@ -252,8 +257,16 @@ bool IsCellLiquid(int index)
  return (mvpLatticeId[index] == 3);
      }
 
+bool IsCellMartensite(int index)
+{
+ return (mvpIsMartensite[index]);
+     }
 
-  
+bool IsCellCarbide(int index)
+{
+    return (mvpLatticeId[index] == 5);
+}
+
     /// @name Functions for retrieving lattice name based on lattice Id stored in CA
     /// @{
 bool IsLatticeIdFCC(int latticeId)
@@ -303,7 +316,8 @@ bool IsLatticeIdBCC(int latticeId)
 
     /// @brief Returns the distance between two cells (in m)
     float GetDistanceBetweenCells(int indexA, int indexB) const;
-
+    /// @brief Returns the distance between two cells (in m) WITHOUT CORRECTION for periodic boundary conditions (i.e. gives real distance)
+float GetDistanceBetweenCellsNoPerodic(int indexA, int indexB) const;
 
     /** @brief Returns (optionally used) local carbon concentration
      *
@@ -351,7 +365,7 @@ bool IsLatticeIdBCC(int latticeId)
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-void SoluteDiffusionStep(ThermChemKin *TCK_p, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int ElementNumber, int LatticeOfHighSol);
+void SoluteDiffusionStep(ThermChemKin *TCK_p, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int ElementNumber, int LatticeOfHighSol, bool IsChargingOneSide);
     void PutBackCarbonTrappedAndCalculateNewCarbonFreeCarbonTrapped();
     void SetCarbonTrappedAndCarbonFreeForGivenXcTot();
     /// @}

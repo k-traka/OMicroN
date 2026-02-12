@@ -175,7 +175,6 @@ StateVars::StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSol
     InitializeBasicStateVariables();
 
     InitBoundaryCells();
-    std::cout << " fine 5" << std::endl;
 
     validateAllNeighbourCells();
 
@@ -184,7 +183,6 @@ StateVars::StateVars(int nx, int ny, int nz, float dx, int grid, bool IncludeSol
         InitializeStateVariablesRelatedToInterfaceMotion();
     }
 
-    std::cout << " fine 5" << std::endl;
 
     if (IncludeSoluteDiffusion)
     {
@@ -239,6 +237,14 @@ StateVars::~StateVars()
         delete[] mvpIsInterphase;
         mvpIsInterphase = nullptr;
     }
+    if (mvpIsMartensite)
+    {
+        delete[] mvpIsMartensite;
+        mvpIsMartensite = nullptr;
+    }
+
+    
+
     if (mvpKappaFactorForSoluteTrappedDefects)
     {
         delete[] mvpKappaFactorForSoluteTrappedDefects;
@@ -312,6 +318,11 @@ void StateVars::InitializeBasicStateVariables()
     {
         mvpLatticeId = new int[mvN];
     }
+    if (!mvpIsMartensite)
+    {
+        mvpIsMartensite = new int[mvN];
+    }
+
 
     mvpOriId.resize(mvN);
     std::fill(mvpOriId.begin(), mvpOriId.end(), -1);
@@ -411,11 +422,13 @@ void StateVars::InitEBSDRelatedStuff()
  * @param rho the dislocation density measured / calculated / simulated from other software
 
  */
-void StateVars::SetEBSDRelatedStuffForRexAndGG(int index, float CI, int RX, float rho)
+void StateVars::SetMicrostructureRelatedStateVars(int index, float CI, int RX, float rho, int IncludeSoluteDiffusion, float Xsolute)
 {
     mvpCI[index] = CI;
     mvpRX[index] = RX;
     mvpRho[index] = rho;
+   if (IncludeSoluteDiffusion) (*mvpXC)[index] = Xsolute;
+
 }
 
 /** @brief Allocates memory for carbon concentration of all cells based
@@ -1033,6 +1046,25 @@ float StateVars::GetDistanceBetweenCells(int indexA, int indexB) const
 }
 
 
+float StateVars::GetDistanceBetweenCellsNoPerodic(int indexA, int indexB) const
+{
+    float di, dj, dk;
+    float i, j, k, iB, jB, kB;
+
+    i = GetXFromIndex(indexA);
+    j = GetYFromIndex(indexA);
+    k = GetZFromIndex(indexA);
+    iB = GetXFromIndex(indexB);
+    jB = GetYFromIndex(indexB);
+    kB = GetZFromIndex(indexB);
+    di = i - iB;
+    dj = j - jB;
+    dk = k - kB;
+
+
+    return sqrt(di * di + dj * dj + dk * dk);
+}
+
 // /** @brief Solves one diffusion step
 //  *
 //  * @param TCK_p pointer to ThermChemKin instance
@@ -1076,11 +1108,12 @@ float StateVars::GetDistanceBetweenCells(int indexA, int indexB) const
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-void StateVars::SoluteDiffusionStep(ThermChemKin *TCK_p, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int ElementNumber, int LatticeOfHighSol)
+void StateVars::SoluteDiffusionStep(ThermChemKin *TCK_p, double dt, bool AllowSoluteSegregation, double maxDiffusivityInTimeStep, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int ElementNumber, int LatticeOfHighSol, bool IsChargingOneSide)
 {
     if (ElementNumber == 0) LOG_F(INFO, "Solving solute diffusion for carbon, mvAlphaDt %g, maxDiffusivityInTimeStep %g, dt %g, dx %g", mvAlphaDt, maxDiffusivityInTimeStep, dt, mvDx);
        if (ElementNumber == 1) LOG_F(INFO, "Solving solute diffusion for copper, mvAlphaDt %g, maxDiffusivityInTimeStep %g, dt %g, dx %g", mvAlphaDt, maxDiffusivityInTimeStep, dt, mvDx);
     if (ElementNumber == 2) LOG_F(INFO, "Solving solute diffusion for tin, mvAlphaDt %g, maxDiffusivityInTimeStep %g, dt %g, dx %g", mvAlphaDt, maxDiffusivityInTimeStep, dt, mvDx);
+    if (ElementNumber == 3) LOG_F(INFO, "Solving solute diffusion for hydrogen, mvAlphaDt %g, maxDiffusivityInTimeStep %g, dt %g, dx %g", mvAlphaDt, maxDiffusivityInTimeStep, dt, mvDx);
 
     LOG_IF_F(INFO, IsPartitioningHappeningHere, "Including carbon partitioning in Ax = b");
     LOG_IF_F(INFO, !IsPartitioningHappeningHere, "Carbon partitioning already solved (not part of Ax = b)");
@@ -1089,10 +1122,10 @@ void StateVars::SoluteDiffusionStep(ThermChemKin *TCK_p, double dt, bool AllowSo
     LOG_IF_F(INFO, !mvKeepConstantIronAtomsPerCell, "Constant number of moles per cell; XCgradient means XC [at.fraction.]");
     LOG_IF_F(INFO, mvKeepConstantIronAtomsPerCell, "Constant number of Fe atoms per cell; XCgradient means XC [carbon / Fe]");
     int maxit = 500;
-    double tolerance = 5e-5; // relative tolerance: iterative linear solver stops at iteration k when
+    double tolerance = 5e-8; // relative tolerance: iterative linear solver stops at iteration k when
     mvAlphaDt = dt * maxDiffusivityInTimeStep / (mvDx * mvDx);
 
-    if (AllowSoluteSegregation && !IsSoluteSegregationHappeningHere && ElementNumber == 0)
+    if (AllowSoluteSegregation && !IsSoluteSegregationHappeningHere && (ElementNumber == 0 || ElementNumber == 3))
     {
         *mvpXC -= *mvpXCTrapped;
     }
@@ -1101,23 +1134,24 @@ void StateVars::SoluteDiffusionStep(ThermChemKin *TCK_p, double dt, bool AllowSo
 
     if (mvKeepConstantIronAtomsPerCell)
         ConvertTotCellConcentrationsInCarbonPerIron();
-
-if (ElementNumber == 0)
-    *mvpXC = NumericalSolverCG(*mvpXC, TCK_p, 500, 5e-5, *mvpXC, IsPartitioningHappeningHere, IsSystemAsBSolvedWithTrapping, true, LatticeOfHighSol);
-    
+if (ElementNumber == 0) // i.e. if is carbon use chem pot and use also same xc pointer (which is either carbon or hydrogen)
+    *mvpXC = NumericalSolverCG(*mvpXC, TCK_p, 500, 5e-5, *mvpXC, IsPartitioningHappeningHere, IsSystemAsBSolvedWithTrapping, true, LatticeOfHighSol, IsChargingOneSide);
+if (ElementNumber == 3) // i.e. if is hydrogen DO NOT use chem pot and use but use same xc pointer (which is either carbon or hydrogen)
+    *mvpXC = NumericalSolverCG(*mvpXC, TCK_p, 500, 5e-5, *mvpXC, IsPartitioningHappeningHere, IsSystemAsBSolvedWithTrapping, false, LatticeOfHighSol, IsChargingOneSide);
+     
 if (ElementNumber == 1)
-    *mvpXCu = NumericalSolverCG(*mvpXCu, TCK_p, 500, 5e-5, *mvpXCu, IsPartitioningHappeningHere, IsSystemAsBSolvedWithTrapping, true, LatticeOfHighSol);
+    *mvpXCu = NumericalSolverCG(*mvpXCu, TCK_p, 500, 5e-5, *mvpXCu, IsPartitioningHappeningHere, IsSystemAsBSolvedWithTrapping, true, LatticeOfHighSol, IsChargingOneSide);
     
 if (ElementNumber == 2)
-    *mvpXSn = NumericalSolverCG(*mvpXSn, TCK_p, 500, 5e-5, *mvpXSn, IsPartitioningHappeningHere, IsSystemAsBSolvedWithTrapping, true, LatticeOfHighSol);
+    *mvpXSn = NumericalSolverCG(*mvpXSn, TCK_p, 500, 5e-5, *mvpXSn, IsPartitioningHappeningHere, IsSystemAsBSolvedWithTrapping, true, LatticeOfHighSol, IsChargingOneSide);
 
     if (mvKeepConstantIronAtomsPerCell)
         ConvertTotCellConcentrationsInAtFraction();
     if (AllowSoluteSegregation)
     {
-        if (!IsSoluteSegregationHappeningHere && ElementNumber == 0)
+        if (!IsSoluteSegregationHappeningHere && (ElementNumber == 0 || ElementNumber == 3))
             PutBackCarbonTrappedAndCalculateNewCarbonFreeCarbonTrapped();
-        if (IsSoluteSegregationHappeningHere && ElementNumber == 0)
+        if (IsSoluteSegregationHappeningHere && (ElementNumber == 0 || ElementNumber == 3))
             SetCarbonTrappedAndCarbonFreeForGivenXcTot();
     }
 }
@@ -1183,7 +1217,10 @@ void StateVars::SetCarbonTrappedAndCarbonFreeForGivenXcTot()
         {
             (*mvpXCTrapped)[i] = 0.;
         }
-        if ((*mvpXC)[i] < 0. || (*mvpXCTrapped)[i] < 0. || (*mvpXC)[i] - (*mvpXCTrapped)[i] < 0.)
+        if (fabs((*mvpXC)[i]) < 1.e-10) (*mvpXC)[i] = 0.;
+        if (fabs((*mvpXCTrapped)[i]) < 1.e-10) (*mvpXCTrapped)[i] = 0.;
+
+        if (fabs((*mvpXC)[i]) > 0.0000001  && ((*mvpXC)[i] < 0. || (*mvpXCTrapped)[i] < 0. || (*mvpXC)[i] - (*mvpXCTrapped)[i] < 0.))
             LOG_F(ERROR, " wrong calculations check cell %d, has XCTot %e, XCFree %e, mvpXCTrapped %e, mvpKappaFactorForSoluteTrappedDefects %e, mvpKappaFactorForSoluteTrappedDefects*rho %e ", i, (*mvpXC)[i], (*mvpXC)[i] - (*mvpXCTrapped)[i], (*mvpXCTrapped)[i], mvpKappaFactorForSoluteTrappedDefects[i], mvpKappaFactorForSoluteTrappedDefects[i] / mvpRho[i] / 1.e12);
     }
 }
@@ -1198,7 +1235,7 @@ void StateVars::SetCarbonTrappedAndCarbonFreeForGivenXcTot()
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *TCK_p, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere,bool UseChemPot, int highSolPhase)
+Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChemKin *TCK_p, int maxit, double tolerance, const Eigen::VectorXd &initial_guess, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere,bool UseChemPot, int highSolPhase, bool IsChargingOneSide)
 {
     Eigen::VectorXd x = initial_guess;
     Eigen::VectorXd r(b.size());
@@ -1208,7 +1245,7 @@ Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChem
 
     // Compute the initial residual r = b - A*x for the initial guess
     // if (UseChemPot)
-    SystemATimesX(x, TCK_p, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere, highSolPhase);
+    SystemATimesX(x, TCK_p, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere, highSolPhase, UseChemPot, IsChargingOneSide);
     // else
     //     SystemATimesXSolidification(x, TCK_p, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere);
     r = b - Ap; // Initial residual
@@ -1224,7 +1261,7 @@ Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChem
     for (int i = 0; i < maxit; ++i)
     {
 // if (UseChemPot)
-        SystemATimesX(p, TCK_p, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere, highSolPhase);
+        SystemATimesX(p, TCK_p, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere, highSolPhase, UseChemPot, IsChargingOneSide);
         // else
         //         SystemATimesXSolidification(x, TCK_p, Ap, p_dotAp, IsPartitioningHappeningHere, IsSoluteSegregationHappeningHere);
         alpha = rsold / p_dotAp;
@@ -1258,10 +1295,11 @@ Eigen::VectorXd StateVars::NumericalSolverCG(const Eigen::VectorXd &b, ThermChem
  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
  */
 
-void StateVars::SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *TCK_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int HighSolPhase)
+void StateVars::SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *TCK_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere, int HighSolPhase, bool UseChemPot, bool IsChargingOneSide)
 {
     int lall[mvNAll];
     double XsolHighEq, XsolLowEq;
+
 //   if  (IsPartitioningHappeningHere) LOG_F(INFO," solving AxB with partitioning");
     for (int i = 0; i < mvN; i++)
     {
@@ -1277,6 +1315,8 @@ void StateVars::SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *TCK_p, Eig
         for (int nbr = 0; nbr < mvNNearest; ++nbr)
         {
             j = lall[nbr];
+            // if (IsChargingOneSide && GetDistanceBetweenCellsNoPerodic(i,j) > 3. * mvDx)  // if cells are not real neighbours and i have charging there is no real concentration gradient between them
+            // continue;
             double RatioXcFreeToXcTotForNbr = 1.;
             if (IsSoluteSegregationHappeningHere)
                 RatioXcFreeToXcTotForNbr /= (1. + mvpKappaFactorForSoluteTrappedDefects[j]);
@@ -1288,7 +1328,7 @@ void StateVars::SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *TCK_p, Eig
                 double XsolHigh = (HighSolPhase == mvpLatticeId[i]) ? RatioXsolFreeToXsolTotForIndex * x[i] : RatioXcFreeToXcTotForNbr * x[j];
                 double XsolLow = (HighSolPhase == mvpLatticeId[i]) ? RatioXcFreeToXcTotForNbr * x[j] : RatioXsolFreeToXsolTotForIndex * x[i];
                 double XsolTot = 0.5 * (XsolHigh + XsolLow);
-                XsolHighEq = TCK_p->GetEqXcFCCAtThisInterface(XsolLow, XsolHigh);
+                XsolHighEq = TCK_p->GetEqXcFCCAtThisInterface(XsolLow, XsolHigh, UseChemPot);
                 XsolLowEq = 2. * XsolTot - XsolHighEq;
                 double XsolPartitionedAtBoundary = (HighSolPhase == mvpLatticeId[i]) ? XsolHighEq : XsolLowEq;
             //  LOG_F(INFO," XsolPartitionedAtBoundary %g",XsolPartitionedAtBoundary);
@@ -1306,6 +1346,7 @@ void StateVars::SystemATimesX(const Eigen::VectorXd &x, ThermChemKin *TCK_p, Eig
         }
         b[i] *= mvAlphaDt;
         b[i] += (NbrCounter * mvAlphaDt * RatioXsolFreeToXsolTotForIndex + 1) * x[i];
+
         if (!IsTheNumberFinite(b[i]))
             ABORT_F(" b[i] %g ", b[i]);
     }
@@ -1465,77 +1506,6 @@ Eigen::MatrixXf StateVars::computeElementStiffness(int cellIndex) const {
     return Ke;
 }
 
-
-
-
-
-// /** @brief Performs one computation of the system Ax=b for Traka's diffusion / partitioning / trapping to defects
-//  * Traka, 2024, Acta Materialia.
-//  *
-//  * @param x the solute concentrations vector which remains here as such
-//  * @param TCK_p pointer to ThermChemKin instance
-//  * @param b the solute concentrations vector which here changes according to the reduction of Ax
-//  * @param p_dotAp dot product of new b
-//  * @param IsPartitioningHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
-//  * @param IsSoluteSegregationHappeningHere bool on whether the diffusion equation includes the solute trapping equilibrium (i.e. if trapping is part of the numerical system Ax=b)
-//  */
-
-// void StateVars::SystemATimesXSolidification(const Eigen::VectorXd &x, ThermChemKin *TCK_p, Eigen::VectorXd &b, double &p_dotAp, bool IsPartitioningHappeningHere, bool IsSoluteSegregationHappeningHere)
-// {
-//     int lall[mvNAll];
-//     double XEqSoluteLiquid, XEqSoluteSolid;
-//     // LOG_F(INFO," mvAlphaDt %g",mvAlphaDt);
-//     for (int i = 0; i < mvN; i++)
-//     {
-//         int j;
-//         float NbrCounter;
-//         double RatioXsolFreeToXsolTotForIndex = 1.;
-//         if (IsSoluteSegregationHappeningHere)
-//             RatioXsolFreeToXsolTotForIndex /= (1. + mvpKappaFactorForSoluteTrappedDefects[i]);
-
-//         b[i] = 0.0;
-//         GetNeighbourCellOffsets(i, lall);
-//         NbrCounter = 0;
-//         for (int nbr = 0; nbr < mvNNearest; ++nbr)
-//         {
-//             j = lall[nbr];
-//             double RatioXcFreeToXcTotForNbr = 1.;
-//             if (IsSoluteSegregationHappeningHere)
-//                 RatioXcFreeToXcTotForNbr /= (1. + mvpKappaFactorForSoluteTrappedDefects[j]);
-
-//             if (mvpLatticeId[j] != mvpLatticeId[i])
-//             {
-//                 if (!IsPartitioningHappeningHere)
-//                     continue;
-//                 double XsoluteLiquid = (IsCellLiquid(i)) ? RatioXsolFreeToXsolTotForIndex * x[i] : RatioXcFreeToXcTotForNbr * x[j];
-//                 double XsoluteSolid = (IsCellLiquid(i)) ? RatioXcFreeToXcTotForNbr * x[j] : RatioXsolFreeToXsolTotForIndex * x[i];
-//                 double XsoluteTot = 0.5 * (XsoluteLiquid + XsoluteSolid);
-//                 double XCTot = 0.0;
-//                 // XEqSoluteLiquid = TCK_p->GetEqSoluteAtLiquidAtThisInterface(XsoluteTot, XCTot);
-
-//                 XEqSoluteLiquid = TCK_p->GetEqXcFCCAtThisInterface(XsoluteSolid,XsoluteLiquid);
-//                 XEqSoluteSolid = 2. * XsoluteTot - XEqSoluteLiquid;
-//                 // std::cout<< " eq liquid "<<XEqSoluteLiquid<<" eq solid "<<XEqSoluteSolid<<std::endl;
-//                 double XsolutePartitionedAtBoundary = (IsCellLiquid(i)) ? XEqSoluteLiquid : XEqSoluteSolid;
-//                 // if (XsoluteTot <  0.25*TCK_p->GetAverageCopper() || XsoluteTot <  0.25*TCK_p->GetAverageTin()) XsolutePartitionedAtBoundary = 0;
-//                 if (!IsTheNumberFinite(XEqSoluteLiquid) || !IsTheNumberFinite(XEqSoluteSolid))
-//                     ABORT_F(" XcGammaEq %g and XcAlphaEq %g", XEqSoluteLiquid, XEqSoluteSolid);
-//                 // LOG_F(INFO," partitioning solution FCC %g and BCC %g xcPart %g", XcGammaEq,XcAlphaEq, XsolPartitionedAtBoundary);
-
-//                 b[i] -= (mvpDiffusivitySolute_Ratio[mvNNearest * i + nbr] * XsolutePartitionedAtBoundary);
-//                 NbrCounter += mvpDiffusivitySolute_Ratio[mvNNearest * i + nbr];
-//                 continue;
-//             }
-//             b[i] -= (mvpDiffusivitySolute_Ratio[mvNNearest * i + nbr] * x[j] * RatioXcFreeToXcTotForNbr);
-//             NbrCounter += mvpDiffusivitySolute_Ratio[mvNNearest * i + nbr];
-//         }
-//         b[i] *= mvAlphaDt;
-//         b[i] += (NbrCounter * mvAlphaDt * RatioXsolFreeToXsolTotForIndex + 1) * x[i];
-//         if (!IsTheNumberFinite(b[i]))
-//             ABORT_F(" b[i] %g ", b[i]);
-//     }
-//     p_dotAp = b.dot(x);
-// }
 
 bool StateVars::IsTheNumberFinite(double numberToCheck)
 {

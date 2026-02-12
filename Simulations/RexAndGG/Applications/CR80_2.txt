@@ -1,4 +1,4 @@
-TimeStep=1
+MaxAllowedTimeStep=1
 StartTemperature=1073
 EndTemperature=1073
 TimeTotal=40
